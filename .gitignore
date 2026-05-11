@@ -49,4 +49,6 @@ app.*.map.json
 *.class
 *.log
 *.pyc
+*.zip
+*.tar.gz
 node_modules/
