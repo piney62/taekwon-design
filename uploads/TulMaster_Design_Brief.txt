@@ -1,0 +1,521 @@
+════════════════════════════════════════════════════════════════
+  TulMaster — Design Brief for Figma / Claude Design
+  Master Every Pattern.
+════════════════════════════════════════════════════════════════
+
+
+────────────────────────────────────────────────────────────────
+PART 1: PRODUCT OVERVIEW
+────────────────────────────────────────────────────────────────
+
+Product:    TulMaster
+Tagline:    Master Every Pattern.
+Domain:     ITF Taekwon-Do training platform
+Users:      Students & Instructors (role-based)
+Languages:  English, Korean, Spanish, Japanese, Chinese
+Platform:   Mobile (Android primary, iOS-ready)
+Theme:      Dark mode primary, Light mode supported
+
+Core Value Proposition:
+A digital training companion for ITF Taekwon-Do practitioners
+that combines pose analysis, progress tracking, pattern learning,
+and instructor-student connection.
+
+Brand Personality:
+  - Disciplined — precise, no clutter
+  - Modern — tech-forward but warm
+  - Respectful — reflects martial arts spirit
+  - Empowering — users feel they are growing
+
+
+────────────────────────────────────────────────────────────────
+PART 2: INFORMATION ARCHITECTURE
+────────────────────────────────────────────────────────────────
+
+Bottom Tab Bar — Student (5 tabs):
+  1. Home      — Daily action hub
+  2. Analyze   — Pose analysis
+  3. Journal   — Training log + personal stats
+  4. Patterns  — 24 patterns + reference
+  5. Me        — Profile + settings
+
+Bottom Tab Bar — Instructor (5 tabs):
+  1. Home      — Dojang dashboard
+  2. Analyze   — Pose analysis
+  3. Dojang    — Student & homework management
+  4. Patterns  — 24 patterns + reference
+  5. Me        — Profile + settings
+
+NOTE: Tab 3 differs by role. All others identical.
+
+
+────────────────────────────────────────────────────────────────
+PART 3: SCREEN INVENTORY & SPECIFICATIONS
+────────────────────────────────────────────────────────────────
+
+═══ GROUP A: ONBOARDING ═══
+
+A1. Splash
+  - Logo + tagline
+  - Auto-advance to A2
+
+A2. Welcome / Entry
+  - Logo, app name
+  - Welcome message
+  - Buttons: Get Started / "Already have an account? Sign in"
+
+A3. Role Selection (Step 1/3)
+  - Two large selectable cards: Student / Instructor
+  - Each card: icon + title + 1-line description
+  - Buttons: Back / Continue
+
+A4. Account Creation (Step 2/3)
+  - Fields: Username, Display Name, Password, Confirm Password
+  - Password show/hide toggle
+  - Validation states (error, success)
+  - Buttons: Back / Continue
+
+A5. Profile Setup (Step 3/3)
+  - If Student: Belt level (dropdown), Dojang invite code (optional)
+  - If Instructor: Dojang name, Dan grade, Years teaching
+  - Buttons: Back / Start
+
+A6. Login
+  - Username + password fields
+  - Forgot password link
+  - Sign in button
+
+
+═══ GROUP B: HOME ═══
+
+B1. Home — Student
+  Purpose: "What should I do today?"
+  Sections (top to bottom):
+    1. Header: Greeting + current belt badge + AI Coach icon + Settings
+    2. Today's Focus card — suggested priority action with CTA
+    3. Sabum's Homework — list with checkboxes & due dates
+    4. Belt Progress card — circular progress to next belt
+    5. This Week Summary — sessions/minutes/streak (compact strip)
+    6. Recent Sessions — last 2-3 entries + "View all"
+
+B2. Home — Instructor
+  Purpose: "Which student needs my attention?"
+  Sections:
+    1. Header: Greeting + dan grade + AI Coach + Settings
+    2. Needs Attention card — inactive students / repeated weak points
+    3. Today's Activity — students trained today, idle, pending HW
+    4. Quick Actions — [+ Assign Homework] [Invite Student]
+    5. Pending Reviews — student analyses awaiting feedback
+    6. Dojang Snapshot — total students, weekly activity rate
+
+
+═══ GROUP C: ANALYZE (POSE ANALYSIS) ═══
+
+C1. Analyze — Entry
+  Purpose: Capture & analyze a pattern movement
+  Elements:
+    - Pattern dropdown (e.g., Chon-Ji)
+    - Movement dropdown (auto-populated based on pattern)
+    - Photo upload area (placeholder when empty)
+    - Buttons: [Gallery] [Camera]
+    - Reference text about master reference photo
+    - Primary CTA: Analyze (disabled until photo selected)
+  Smart pre-fill: When entered from Home's "Today's Focus",
+  pattern & movement are auto-selected.
+
+C2. Analyze — Result
+  Purpose: Show comparison + actionable feedback
+  Elements:
+    - Side-by-side: User photo / Master reference
+    - Overall score (large number + visual gauge)
+    - Detected issues (prioritized list)
+    - Each issue: severity tag + specific feedback + practice tip
+    - Actions: [Save to Journal] [Retry] [Ask AI Coach about this]
+
+C3. Analyze — History (optional sub-screen)
+  - List of past analyses with thumbnails
+  - Filter by pattern / movement
+  - Tap → opens C2 view of that record
+
+
+═══ GROUP D: JOURNAL (STUDENT ONLY) ═══
+
+NOTE: This tab absorbs the old "Statistics" tab.
+Stats are integrated as collapsible cards within Journal.
+
+D1. Journal — Main
+  Purpose: Track training, see progress, view stats — all in one place
+  Sections (top to bottom):
+    1. Header: Title "Journal" + Sabum connection badge
+    2. Summary Strip — 3 mini-cards: Streak / This month / Pending HW
+    3. Sabum's Homework — checkboxes, due dates, completion status
+    4. Belt Progress card (collapsible) — % to next belt
+    5. Weak Points card (collapsible) — top 3 weak movements
+    6. My Stats card (collapsible, NEW) — total sessions/time/avg score
+    7. Training Calendar — monthly view, training days marked
+    8. Trends card (collapsible, NEW) — monthly bar + type donut
+    9. Recent Records — last 3 entries + "View all"
+    10. FAB: + Add Training
+
+D2. Journal — Add Training (Modal/Sheet)
+  Elements:
+    - Date picker
+    - Training type (Pattern / Sparring / Breaking / Other)
+    - Pattern selector (if type = Pattern)
+    - Duration (minutes)
+    - Self-rating (5 stars)
+    - Memo (multiline)
+    - Buttons: [Cancel] [Save]
+
+D3. Journal — All Records
+  - Full list of training records
+  - Filter: type, date range, auto-saved/manual
+  - Each item: pattern, date, duration, rating, sabum comment if any
+  - Edit/Delete icons
+  - FAB: + Add Training
+
+D4. Journal — Weak Points Detail
+  Purpose: Show pattern of repeated weak movements
+  - Info banner explaining consecutive count
+  - List sorted by severity:
+      * Movement name + pattern
+      * Severity tag (Critical / Needs Improvement / Watch)
+      * Consecutive count
+      * First detected date
+  - Tap an item → opens analysis prefilled (links to C1)
+
+D5. Journal — Belt Progress Detail
+  Purpose: Show readiness checklist for next belt
+  - Large circular progress (e.g., 60%)
+  - Title: "To [next belt name]"
+  - Checklist items with status:
+      * Training duration
+      * Pattern analyses count
+      * Pattern quality
+      * Sparring evaluation by sabum (pending)
+      * Breaking evaluation (optional)
+  - Helper text on remaining requirements
+  - Button: Take AI Theory Test
+
+
+═══ GROUP E: DOJANG (INSTRUCTOR ONLY) ═══
+
+E1. Dojang — Main
+  Purpose: Manage students & assign homework
+  Sections:
+    1. Header: "Dojang" + refresh icon
+    2. Invite Code card:
+       - If no active code: [+ Invite Students] CTA → E2
+       - If active: QR + code + expiry + Share/Copy/Delete
+    3. Bulk Homework Assign — text input (max 200) + due date + button
+    4. Students List — each row: avatar, name, belt, last active
+       Empty state: "No students yet. Invite to get started."
+    5. FAB or top action: + Add Student
+
+E2. Invite Code Generation (Modal)
+  - QR code (large)
+  - Code text
+  - Expiry date selector
+  - Buttons: [Share] [Copy] [Done]
+
+E3. Student Detail
+  Purpose: Drill into a single student
+  - Header: Student name, belt, joined date
+  - Sections:
+      * Activity: training frequency, last session
+      * Patterns: which patterns analyzed, weak points
+      * Homework: assigned, completed, pending
+      * Comments: instructor's comment history
+  - Actions: [Send Comment] [Assign HW] [Remove from dojang]
+
+E4. Pending Reviews
+  - List of student analyses awaiting feedback
+  - Each: student name + pattern + submitted date
+  - Tap → opens review view with comment field
+
+
+═══ GROUP F: PATTERNS (BOTH ROLES) ═══
+
+F1. Patterns — Main
+  Purpose: Learn the 24 ITF patterns + reference materials
+  Sections:
+    1. Header: "Patterns"
+    2. Current Pattern card — based on user's belt
+       - Thumbnail, name (English + Korean)
+       - Movement count, mini progress bar
+       - CTA: Study Now
+    3. All Patterns (24 items list)
+       - Each row: number, English name, Korean, movements, belt tag
+       - Visual de-emphasis for locked but still accessible
+    4. Reference section (accordion or sub-cards):
+       - Terminology Dictionary
+       - 5 Tenets
+       - ITF History
+       - AI Coach (chat)
+
+  NOTE: Students CAN view all 24 patterns regardless of belt.
+  Current pattern is highlighted; others de-emphasized but accessible.
+
+F2. Pattern Detail
+  Purpose: Learn a specific pattern
+  Elements:
+    - Header: pattern number + name (English / Korean)
+    - Tab switcher: Image Study / Video Study
+    - Image mode:
+        * Large reference photo
+        * Direction selector: Front / Back / Left / Right
+        * Movement navigator: ← Previous / label / Next →
+    - Video mode:
+        * Embedded video player with standard controls
+    - Below: Brief description of pattern meaning
+
+F3. Terminology Dictionary
+  - Top filter chips: Stances / Blocks / Kicks / Strikes
+  - Searchable list
+  - Each item: Korean term + English name + romanization + description
+
+F4. ITF History (Timeline)
+  - Vertical timeline
+  - Each milestone: year + title + description
+  - Current focus visually highlighted
+
+F5. 5 Tenets
+  - 5 cards: Courtesy, Integrity, Perseverance,
+    Self-Control, Indomitable Spirit
+  - Each: icon, name (EN + KO + Hanja), description
+
+F6. AI Coach (Chat)
+  - Empty state: welcome message
+  - Chat history (user / AI bubbles)
+  - Suggested prompts (chips above input):
+      * "What should I practice today?"
+      * "Explain the 5 tenets"
+      * "What is ap kubi stance?"
+  - Input bar: text field + send button
+  - Top right: clear chat icon
+
+
+═══ GROUP G: ME (BOTH ROLES) ═══
+
+G1. Me — Main
+  Sections:
+    1. Profile card: avatar, name, role badge, belt or dan
+    2. Change Password action
+    3. Theme: Dark / Light / System
+    4. Language: 5-option list with radio
+    5. Dojang info (read-only)
+    6. About / Support: version, terms, privacy, contact
+    7. Logout button (visually distinct)
+
+G2. Edit Profile (Modal)
+  - Avatar upload (optional)
+  - Display name edit
+  - Save / Cancel
+
+G3. Change Password (Modal)
+  - Current password
+  - New password
+  - Confirm new password
+  - Save / Cancel
+
+
+────────────────────────────────────────────────────────────────
+PART 4: KEY USER FLOWS
+────────────────────────────────────────────────────────────────
+
+Flow 1: First-time Student
+  Splash → Welcome → Role(Student) → Account → Profile → Home
+
+Flow 2: Daily Training Loop (Student)
+  Home (Today's Focus) → Analyze (pre-filled) →
+  Take/upload photo → View result → Save to Journal → Home
+
+Flow 3: Check Progress (Student)
+  Home → Journal → Belt Progress card → Detail view
+
+Flow 4: Instructor Reviewing Student
+  Home (Pending Reviews) → Tap item → View analysis →
+  Add comment → Done
+
+Flow 5: Inviting Students (Instructor)
+  Dojang → [+ Invite Students] → QR generated → Share → Done
+
+Flow 6: Learning a New Pattern
+  Patterns → Current Pattern card → Pattern Detail →
+  Switch Image/Video → Navigate movements
+
+
+────────────────────────────────────────────────────────────────
+PART 5: REUSABLE COMPONENT INVENTORY
+────────────────────────────────────────────────────────────────
+
+  - Bottom Tab Bar (5-tab fixed bottom navigation)
+  - Top App Bar (back, title, contextual action)
+  - Card (container, often tappable)
+  - Stat Card (number + label + icon, compact)
+  - Progress Ring (circular progress indicator)
+  - Checklist Item (checkbox + label + meta)
+  - List Row (avatar/icon + title + meta + chevron)
+  - Filter Chips (horizontal scrollable selector)
+  - Tag / Badge (small label, color-coded)
+  - FAB (floating action button)
+  - Modal Sheet (bottom sheet for short forms)
+  - Empty State (icon + message + CTA)
+  - Form Fields (input, dropdown, date, textarea)
+  - Buttons (Primary, Secondary, Ghost, Destructive)
+  - Star Rating (5-star selectable)
+  - Calendar (month view with marked days)
+  - Donut Chart (type distribution)
+  - Bar Chart (monthly training count)
+  - Chat Bubble (user & AI message styles)
+  - QR Code Display (with actions)
+
+
+────────────────────────────────────────────────────────────────
+PART 6: CONSTRAINTS & GUIDELINES
+────────────────────────────────────────────────────────────────
+
+  - Mobile-first: reference width ~380px, scale gracefully
+  - Dark mode is primary; light mode supported
+  - Multi-language: allow text expansion (Spanish ~30% longer)
+  - Accessibility: WCAG AA contrast; touch targets ≥44px
+  - No "AI" branding in UI — describe functions by what they do
+  - Belt colors are functional, not decorative
+  - Empty states matter — every list needs a thoughtful empty state
+  - Progressive disclosure — collapse advanced detail
+  - Korean terms preserved as ITF tradition, always paired with
+    English translation/romanization
+
+
+────────────────────────────────────────────────────────────────
+PART 7: READY-TO-USE PROMPT FOR FIGMA AI / CLAUDE DESIGN
+────────────────────────────────────────────────────────────────
+
+Copy the block below and paste into Figma AI or Claude Design:
+
+────────────────────────────────────────────────────────────────
+
+Design a mobile app called "TulMaster", a training companion for
+ITF Taekwon-Do practitioners. Tagline: "Master Every Pattern."
+
+PRODUCT
+A mobile app (Android primary) with two user roles: Student and
+Instructor. Dark mode primary, light mode supported. Five
+languages: English, Korean, Spanish, Japanese, Chinese.
+
+NAVIGATION
+Bottom tab bar with 5 tabs.
+- Student tabs: Home, Analyze, Journal, Patterns, Me
+- Instructor tabs: Home, Analyze, Dojang, Patterns, Me
+
+SCREENS TO DESIGN
+
+1. Onboarding flow: Splash, Welcome, Role Selection (Student/
+   Instructor), Account Creation, Profile Setup, Login.
+
+2. Home (Student): greeting + current belt; "Today's Focus" card
+   with suggested priority action; Sabum's homework list with
+   checkboxes; belt progress circular indicator; this-week summary
+   strip (sessions/minutes/streak); recent sessions list.
+
+3. Home (Instructor): "Needs Attention" student alerts; today's
+   activity stats; quick action buttons (assign homework, invite
+   student); pending review queue; dojang snapshot.
+
+4. Analyze — Entry: pattern dropdown, movement dropdown, photo
+   upload area, Gallery/Camera buttons, primary Analyze CTA.
+
+5. Analyze — Result: side-by-side user vs master reference photo,
+   overall score with visual gauge, prioritized list of detected
+   issues with severity tags and practice tips, action buttons
+   (save, retry, ask coach).
+
+6. Journal — Main (Student only): summary strip (streak/month/
+   pending HW), sabum's homework list, collapsible cards for Belt
+   Progress, Weak Points, My Stats (total sessions/time/avg),
+   training calendar (monthly), collapsible Trends card (monthly
+   bar chart + type donut chart), recent records list, FAB to add
+   training.
+
+7. Journal — Add Training modal: date, type, pattern, duration,
+   5-star self-rating, memo, save/cancel.
+
+8. Journal — All Records: full filterable list, edit/delete per
+   item, FAB.
+
+9. Journal — Weak Points Detail: ranked list of repeated weak
+   movements with severity tags and consecutive count.
+
+10. Journal — Belt Progress Detail: large progress ring, checklist
+    of readiness criteria with status (training duration, analyses
+    count, quality, sabum evaluations), CTA for theory test.
+
+11. Dojang — Main (Instructor only): invite code section (QR +
+    code + expiry + share/copy actions OR generate CTA), bulk
+    homework assign (text input + due date + assign button),
+    students list with empty state.
+
+12. Dojang — Invite Code Modal: large QR, code, expiry, share/copy.
+
+13. Dojang — Student Detail: student profile, activity/patterns/
+    homework/comments sections, action buttons.
+
+14. Patterns — Main: "Current Pattern" highlight card with CTA,
+    full list of 24 patterns (number, English name, Korean name,
+    movement count, belt level tag), reference section
+    (Terminology, 5 Tenets, History, AI Coach).
+
+15. Pattern Detail: tab switcher for Image Study / Video Study;
+    image mode has direction selector (Front/Back/Left/Right) and
+    movement navigator (prev/next); video mode has video player;
+    brief pattern description.
+
+16. Terminology Dictionary: filter chips (Stances/Blocks/Kicks/
+    Strikes), searchable list of Korean terms with English
+    translation and romanization.
+
+17. ITF History: vertical timeline of milestones.
+
+18. 5 Tenets: five tenet cards (icon, name in English/Korean/
+    Hanja, description).
+
+19. AI Coach Chat: chat interface with welcome state, suggested
+    prompt chips, user/AI message bubbles, text input.
+
+20. Me: profile card (avatar, name, role badge, belt), change
+    password action, theme selector (Dark/Light/System), language
+    selector (5 languages with radio), connected dojang info,
+    logout button.
+
+DESIGN PRINCIPLES
+- Disciplined yet modern aesthetic, neither cold tech nor overly
+  traditional
+- Multi-angle pattern reference is a unique feature — design it
+  prominently
+- Belt colors are functional indicators of rank, not decorative
+- Korean terms always paired with English translation/romanization
+- Empty states must be thoughtful, with icon + message + CTA
+- All touch targets minimum 44px, WCAG AA contrast
+- Allow for text expansion across 5 languages (Spanish ~30% longer)
+- Progressive disclosure: collapsible cards for advanced detail
+- Never use "AI" as a branding element in UI — describe what
+  features do
+
+REUSABLE COMPONENTS
+Bottom tab bar, top app bar, cards (tappable), stat cards,
+progress rings, checklist items, list rows, filter chips, tags/
+badges, FAB, modal sheets, empty states, form fields, buttons
+(primary/secondary/ghost/destructive), 5-star rating, calendar,
+donut chart, bar chart, chat bubbles, QR code display.
+
+DELIVERABLES
+- Component library with variants and states
+- All screens above with realistic content
+- Dark mode primary; light mode variants for key screens
+- Mobile reference width ~380px
+
+────────────────────────────────────────────────────────────────
+
+════════════════════════════════════════════════════════════════
+                    END OF DESIGN BRIEF
+════════════════════════════════════════════════════════════════

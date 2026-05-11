@@ -1,0 +1,39 @@
+name: tulmaster
+description: "TulMaster — ITF Taekwon-Do training companion"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # State + navigation
+  flutter_riverpod: ^2.6.1
+  go_router: ^14.6.2
+
+  # UI
+  google_fonts: ^6.2.1
+  lucide_icons: ^0.257.0
+  fl_chart: ^0.69.2
+  qr_flutter: ^4.1.0
+  dotted_border: ^2.1.0
+
+  # Utilities
+  intl: ^0.20.1
+  shared_preferences: ^2.3.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
