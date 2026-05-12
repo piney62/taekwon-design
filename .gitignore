@@ -45,6 +45,36 @@ app.*.map.json
 # Web build artifacts
 **/web/build/
 
+# ── Python / Server ───────────────────────────────────────────
+# Virtual environments (any name, any location)
+**/venv/
+**/.venv/
+**/env/
+
+# Bytecode / caches
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local Python dotenv files (keep .env.example committed)
+.env
+.env.*
+!.env.example
+
+# Local SQLite / Alembic dev data
+*.sqlite3
+*.db
+
+# ── ITF_Server runtime data ───────────────────────────────────
+# Master patterns / videos / uploaded media — manage via cloud storage,
+# not in git. Keep the folder reachable by checking in a .gitkeep if needed.
+ITF_Server/static/
+ITF_Server/uploads/
+
 # ── Misc ──────────────────────────────────────────────────────
 *.class
 *.log
