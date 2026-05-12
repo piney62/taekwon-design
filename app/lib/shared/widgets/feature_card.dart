@@ -46,22 +46,36 @@ class FeatureCard extends StatelessWidget {
         child: Stack(
           children: [
             // Gradient fills the whole card, sized by the content below.
+            // Uses the refined "feature" variant — deeper, less candy.
             const Positioned.fill(
               child: DecoratedBox(
-                decoration: BoxDecoration(gradient: TulGradients.brand),
+                decoration: BoxDecoration(gradient: TulGradients.feature),
+              ),
+            ),
+            // Subtle dark wash that pulls the middle highlight down a notch
+            // and adds dimensional depth from top-left to bottom-right.
+            const Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0x14000000), Color(0x29000000)],
+                  ),
+                ),
               ),
             ),
             // Soft white glows (CSS::before / ::after equivalents). RadialGradient
-            // gives a true fading bloom instead of a hard-edged disc.
+            // gives a true fading bloom; brighter now to balance the deeper base.
             Positioned(
-              top: -40,
-              right: -40,
-              child: _Bloom(size: 200, intensity: 0.22),
+              top: -50,
+              right: -50,
+              child: _Bloom(size: 220, intensity: 0.18),
             ),
             Positioned(
               bottom: -40,
               left: -30,
-              child: _Bloom(size: 160, intensity: 0.10),
+              child: _Bloom(size: 160, intensity: 0.08),
             ),
             Padding(
               padding: const EdgeInsets.all(22),
