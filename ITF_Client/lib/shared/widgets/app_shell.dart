@@ -24,13 +24,16 @@ class AppShell extends ConsumerWidget {
     final items = isInstructor ? _instructorTabs : _studentTabs;
 
     return Scaffold(
-      // Keep the bar opaque-on-top so screens can scroll their content right
-      // up to the tab bar without having to reserve bottom padding themselves.
-      // extendBody: true sounded nice for the frosted effect, but it forced
-      // every screen to add a tab-bar-height bottom inset to avoid clipping
-      // the last item — a foot-gun for the dozen+ existing screens.
+      // Keep the bar above the body (extendBody: false) so screens don't have
+      // to reserve a tab-bar-height bottom inset to avoid clipping. A small
+      // outer Padding adds breathing room between body content and the bar —
+      // without it, cards (FeatureCard, halo elements) butt right up against
+      // the bar's top edge and look pinched.
       extendBody: false,
-      body: navigationShell,
+      body: Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: navigationShell,
+      ),
       bottomNavigationBar: _TulTabBar(
         items: items,
         currentIndex: navigationShell.currentIndex,
