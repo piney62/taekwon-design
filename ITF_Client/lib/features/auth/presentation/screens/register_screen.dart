@@ -1,8 +1,14 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/tul_gradients.dart';
+import '../../../../core/theme/tul_palette.dart';
+import '../../../../core/theme/tul_radius.dart';
+import '../../../../core/theme/tul_text_styles.dart';
+import '../../../../shared/widgets/gradient_text.dart';
+import '../../../../shared/widgets/tul_buttons.dart';
 import '../../../settings/application/providers.dart';
 import '../../../settings/domain/entities/belt_level.dart';
 import '../../application/providers.dart';
@@ -39,8 +45,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   bool _isSaving = false;
   String? _error;
+  bool _showSplash = true;
 
   static const _belts = ['white', 'yellow', 'green', 'blue', 'red', 'black'];
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(milliseconds: 1800), () {
+      if (mounted) setState(() => _showSplash = false);
+    });
+  }
 
   @override
   void dispose() {
@@ -170,8 +185,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_showSplash) return const _SplashView();
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.tul.stage,
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 280),
         transitionBuilder: (child, animation) => FadeTransition(
@@ -261,6 +277,172 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 }
 
+// ── Splash ────────────────────────────────────────────────────────────────────
+
+class _SplashView extends StatefulWidget {
+  const _SplashView();
+
+  @override
+  State<_SplashView> createState() => _SplashViewState();
+}
+
+class _SplashViewState extends State<_SplashView>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctl;
+  late final Animation<double> _fade;
+  late final Animation<double> _scale;
+  late final Animation<double> _textFade;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1100),
+    );
+    _fade = CurvedAnimation(
+      parent: _ctl,
+      curve: const Interval(0.0, 0.55, curve: Curves.easeOut),
+    );
+    _scale = Tween<double>(begin: 0.86, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _ctl,
+        curve: const Interval(0.0, 0.6, curve: Curves.easeOutCubic),
+      ),
+    );
+    _textFade = CurvedAnimation(
+      parent: _ctl,
+      curve: const Interval(0.4, 1.0, curve: Curves.easeOut),
+    );
+    _ctl.forward();
+  }
+
+  @override
+  void dispose() {
+    _ctl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          // Warm red wash behind the mark
+          const Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  center: Alignment(0, -0.15),
+                  radius: 0.95,
+                  colors: [Color(0x80EF4444), Colors.transparent],
+                  stops: [0, 0.6],
+                ),
+              ),
+            ),
+          ),
+          // Cool blue wash on the lower half
+          const Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  center: Alignment(0, 0.65),
+                  radius: 1.0,
+                  colors: [Color(0x593B82F6), Colors.transparent],
+                  stops: [0, 0.55],
+                ),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  FadeTransition(
+                    opacity: _fade,
+                    child: ScaleTransition(
+                      scale: _scale,
+                      child: Container(
+                        width: 168,
+                        height: 168,
+                        alignment: Alignment.center,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: RadialGradient(
+                            colors: [Color(0x33EF4444), Colors.transparent],
+                            stops: [0, 0.75],
+                          ),
+                        ),
+                        child: Image.asset(
+                          'assets/images/logo_white.png',
+                          width: 132,
+                          height: 132,
+                          fit: BoxFit.contain,
+                          filterQuality: FilterQuality.high,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  FadeTransition(
+                    opacity: _textFade,
+                    child: Column(
+                      children: [
+                        Text(
+                          'TulMaster',
+                          style: TulTextStyles.splashTitle(color: Colors.white),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          'MASTER EVERY PATTERN',
+                          style: TulTextStyles.mono(
+                            size: 12,
+                            color: const Color(0xFFA3A3A8),
+                            letterSpacing: 3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Bottom page dots
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 60,
+            child: FadeTransition(
+              opacity: _textFade,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(3, (i) {
+                  final isActive = i == 0;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    width: isActive ? 18 : 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: isActive
+                          ? const Color(0xFFEF4444)
+                          : Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  );
+                }),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 // ── Welcome ───────────────────────────────────────────────────────────────────
 
 class _WelcomeView extends StatelessWidget {
@@ -270,88 +452,74 @@ class _WelcomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF0A0A0C), Color(0xFF050507)],
-        ),
-      ),
-      child: SafeArea(
+    final palette = context.tul;
+    return Scaffold(
+      backgroundColor: palette.stage,
+      body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 28),
+          padding: const EdgeInsets.all(28),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Spacer(),
-              // Logo
-              Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  gradient: AppColors.gradMain,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Icon(Icons.sports_martial_arts_rounded,
-                    size: 36, color: Colors.white),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'TulMaster',
-                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.5,
+              const SizedBox(height: 48),
+              // Logo with red bloom
+              Center(
+                child: Container(
+                  width: 168,
+                  height: 168,
+                  alignment: Alignment.center,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [Color(0x29EF4444), Colors.transparent],
+                      stops: [0, 0.75],
                     ),
+                  ),
+                  child: Image.asset(
+                    'assets/images/logo_white.png',
+                    width: 124,
+                    height: 124,
+                    fit: BoxFit.contain,
+                    filterQuality: FilterQuality.high,
+                  ),
+                ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Master Every Pattern.',
-                style: TextStyle(fontSize: 15, color: AppColors.textMuted),
+              const SizedBox(height: 28),
+              GradientText(
+                'TulMaster',
+                gradient: TulGradients.brand,
+                style: TulTextStyles.splashTitle(),
+                textAlign: TextAlign.center,
               ),
-              const Spacer(),
-              // Description
+              const SizedBox(height: 14),
               Text(
                 'auth.welcomeDesc'.tr(),
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: 14, color: AppColors.textMuted, height: 1.6),
+                style: TulTextStyles.subtitle(color: palette.text2)
+                    .copyWith(height: 1.55),
               ),
-              const SizedBox(height: 32),
-              // CTA
-              _GradBtn(
+              const Spacer(),
+              TulPrimaryButton(
                 label: 'auth.getStarted'.tr(),
-                onTap: onGetStarted,
+                onPressed: onGetStarted,
               ),
               const SizedBox(height: 12),
-              GestureDetector(
-                onTap: onLogin,
-                child: Container(
-                  width: double.infinity,
-                  height: 54,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: Center(
-                    child: RichText(
-                      text: TextSpan(
-                        style: const TextStyle(fontSize: 14),
-                        children: [
-                          TextSpan(
-                              text: '${'auth.haveAccount'.tr()}  ',
-                              style: TextStyle(color: AppColors.textMuted)),
-                          TextSpan(
-                              text: 'auth.login'.tr(),
-                              style: TextStyle(
-                                  color: AppColors.primary,
-                                  fontWeight: FontWeight.w600)),
-                        ],
+              TextButton(
+                onPressed: onLogin,
+                child: Text.rich(
+                  TextSpan(
+                    text: '${'auth.haveAccount'.tr()}  ',
+                    style: TulTextStyles.small(color: palette.text2),
+                    children: [
+                      TextSpan(
+                        text: 'auth.login'.tr(),
+                        style: TulTextStyles.smallStrong(color: palette.primary),
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 12),
             ],
           ),
         ),
@@ -385,6 +553,7 @@ class _LoginView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -401,23 +570,23 @@ class _LoginView extends StatelessWidget {
                   Container(
                     width: 56,
                     height: 56,
+                    alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      gradient: AppColors.gradMain,
+                      gradient: TulGradients.brand,
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: const Icon(Icons.sports_martial_arts_rounded,
-                        size: 28, color: Colors.white),
+                    child: const Icon(LucideIcons.award, size: 28, color: Colors.white),
                   ),
                   const SizedBox(height: 16),
-                  Text('auth.loginTitle'.tr(),
-                      style: Theme.of(context)
-                          .textTheme
-                          .headlineSmall
-                          ?.copyWith(fontWeight: FontWeight.w700)),
+                  Text(
+                    'auth.loginTitle'.tr(),
+                    style: TulTextStyles.h2(color: palette.text),
+                  ),
                   const SizedBox(height: 6),
-                  Text('auth.loginSubtitle'.tr(),
-                      style: TextStyle(
-                          fontSize: 13, color: AppColors.textMuted)),
+                  Text(
+                    'auth.loginSubtitle'.tr(),
+                    style: TulTextStyles.small(color: palette.text2),
+                  ),
                 ],
               ),
             ),
@@ -426,7 +595,7 @@ class _LoginView extends StatelessWidget {
               ctrl: usernameCtrl,
               label: 'auth.username'.tr(),
               hint: 'auth.usernameHint'.tr(),
-              icon: Icons.person_outline_rounded,
+              icon: LucideIcons.user,
               action: TextInputAction.next,
             ),
             const SizedBox(height: 14),
@@ -444,9 +613,10 @@ class _LoginView extends StatelessWidget {
               child: TextButton(
                 onPressed: () {},
                 style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                child: Text('auth.forgotPassword'.tr(),
-                    style: TextStyle(
-                        fontSize: 12, color: AppColors.primary)),
+                child: Text(
+                  'auth.forgotPassword'.tr(),
+                  style: TulTextStyles.small(color: palette.primary),
+                ),
               ),
             ),
             if (error != null) ...[
@@ -484,6 +654,7 @@ class _RoleView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -495,28 +666,25 @@ class _RoleView extends StatelessWidget {
             const SizedBox(height: 24),
             _StepDots(current: 0, total: 3),
             const SizedBox(height: 20),
-            RichText(
-              text: TextSpan(
-                style: Theme.of(context)
-                    .textTheme
-                    .headlineSmall
-                    ?.copyWith(fontWeight: FontWeight.w800),
-                children: [
-                  TextSpan(text: '${'auth.roleSelectTitle'.tr().split(' ').take(2).join(' ')} '),
-                  TextSpan(
-                      text: 'auth.roleSelectTitle'.tr().split(' ').skip(2).join(' '),
-                      style: TextStyle(color: AppColors.primary)),
-                ],
-              ),
+            Text(
+              _roleSelectPrefix('auth.roleSelectTitle'.tr()),
+              style: TulTextStyles.title(color: palette.text),
+            ),
+            GradientText(
+              _roleSelectSuffix('auth.roleSelectTitle'.tr()),
+              gradient: TulGradients.brand,
+              style: TulTextStyles.title(),
             ),
             const SizedBox(height: 6),
-            Text('auth.roleSelectSubtitle'.tr(),
-                style: TextStyle(fontSize: 13, color: AppColors.textMuted)),
+            Text(
+              'auth.roleSelectSubtitle'.tr(),
+              style: TulTextStyles.small(color: palette.text2),
+            ),
             const SizedBox(height: 28),
             _RoleCard(
               selected: role == 'student',
-              icon: Icons.school_outlined,
-              accentColor: AppColors.primary,
+              icon: LucideIcons.bookOpen,
+              accentColor: palette.primary,
               title: 'auth.roleStudent'.tr(),
               desc: 'auth.roleStudentDesc'.tr(),
               onTap: () => onRoleChanged('student'),
@@ -524,8 +692,8 @@ class _RoleView extends StatelessWidget {
             const SizedBox(height: 12),
             _RoleCard(
               selected: role == 'instructor',
-              icon: Icons.sports_martial_arts_rounded,
-              accentColor: AppColors.secondary,
+              icon: LucideIcons.award,
+              accentColor: palette.secondary,
               title: 'auth.roleInstructor'.tr(),
               desc: 'auth.roleInstructorDesc'.tr(),
               onTap: () => onRoleChanged('instructor'),
@@ -538,6 +706,11 @@ class _RoleView extends StatelessWidget {
       ),
     );
   }
+
+  static String _roleSelectPrefix(String s) =>
+      s.split(' ').take(2).join(' ');
+  static String _roleSelectSuffix(String s) =>
+      s.split(' ').skip(2).join(' ');
 }
 
 // ── Step 2: Credentials ───────────────────────────────────────────────────────
@@ -577,6 +750,7 @@ class _CredentialsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -588,38 +762,31 @@ class _CredentialsView extends StatelessWidget {
             const SizedBox(height: 24),
             _StepDots(current: 1, total: 3),
             const SizedBox(height: 20),
-            RichText(
-              text: TextSpan(
-                style: Theme.of(context)
-                    .textTheme
-                    .headlineSmall
-                    ?.copyWith(fontWeight: FontWeight.w800),
-                children: [
-                  const TextSpan(text: 'Create your '),
-                  TextSpan(
-                      text: 'account',
-                      style: TextStyle(color: AppColors.primary)),
-                ],
-              ),
+            Text('Create your', style: TulTextStyles.title(color: palette.text)),
+            GradientText(
+              'account',
+              gradient: TulGradients.brand,
+              style: TulTextStyles.title(),
             ),
-            const SizedBox(height: 6),
-            Text('auth.registerSubtitle'.tr(),
-                style: TextStyle(fontSize: 13, color: AppColors.textMuted)),
+            const SizedBox(height: 8),
+            Text(
+              'auth.registerSubtitle'.tr(),
+              style: TulTextStyles.small(color: palette.text2),
+            ),
             const SizedBox(height: 28),
             _AuthField(
               ctrl: usernameCtrl,
               label: 'auth.username'.tr(),
               hint: 'auth.usernameHint'.tr(),
-              icon: Icons.alternate_email_rounded,
               action: TextInputAction.next,
               onChanged: (_) => onChanged(),
+              helperText: 'auth.usernameHint'.tr(),
             ),
             const SizedBox(height: 14),
             _AuthField(
               ctrl: nameCtrl,
               label: 'auth.displayName'.tr(),
               hint: 'auth.displayNameHint'.tr(),
-              icon: Icons.person_outline_rounded,
               action: TextInputAction.next,
               onChanged: (_) => onChanged(),
             ),
@@ -628,7 +795,6 @@ class _CredentialsView extends StatelessWidget {
               ctrl: emailCtrl,
               label: 'auth.email'.tr(),
               hint: 'auth.emailHint'.tr(),
-              icon: Icons.email_outlined,
               action: TextInputAction.next,
               keyboardType: TextInputType.emailAddress,
               onChanged: (_) => onChanged(),
@@ -651,6 +817,11 @@ class _CredentialsView extends StatelessWidget {
               onToggle: onToggleConfirm,
               action: TextInputAction.done,
               onChanged: (_) => onChanged(),
+              helperText: confirmCtrl.text.isNotEmpty &&
+                      passCtrl.text == confirmCtrl.text
+                  ? '✓  Passwords match.'
+                  : null,
+              helperColor: palette.green,
             ),
             if (error != null) ...[
               const SizedBox(height: 12),
@@ -696,6 +867,7 @@ class _StudentProfileView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -707,52 +879,44 @@ class _StudentProfileView extends StatelessWidget {
             const SizedBox(height: 24),
             _StepDots(current: 2, total: 3),
             const SizedBox(height: 20),
-            RichText(
-              text: TextSpan(
-                style: Theme.of(context)
-                    .textTheme
-                    .headlineSmall
-                    ?.copyWith(fontWeight: FontWeight.w800),
-                children: [
-                  const TextSpan(text: 'Set up your '),
-                  TextSpan(
-                      text: 'profile',
-                      style: TextStyle(color: AppColors.primary)),
-                ],
-              ),
+            Text('Set up your', style: TulTextStyles.title(color: palette.text)),
+            GradientText(
+              'profile',
+              gradient: TulGradients.brand,
+              style: TulTextStyles.title(),
             ),
-            const SizedBox(height: 6),
-            Text('auth.studentProfileSubtitle'.tr(),
-                style: TextStyle(fontSize: 13, color: AppColors.textMuted)),
+            const SizedBox(height: 8),
+            Text(
+              'auth.studentProfileSubtitle'.tr(),
+              style: TulTextStyles.small(color: palette.text2),
+            ),
             const SizedBox(height: 28),
             // Belt dropdown
             Container(
               decoration: BoxDecoration(
-                color: AppColors.surfaceVariant,
-                borderRadius: BorderRadius.circular(14),
+                color: palette.stripe,
+                borderRadius: TulRadius.brMd,
               ),
               child: DropdownButtonFormField<String>(
                 initialValue: beltLevel,
                 decoration: InputDecoration(
                   labelText: 'auth.currentBelt'.tr(),
-                  labelStyle:
-                      TextStyle(color: AppColors.textMuted, fontSize: 12),
-                  prefixIcon: Icon(Icons.military_tech_outlined,
-                      color: AppColors.textMuted, size: 20),
+                  labelStyle: TulTextStyles.small(color: palette.text2),
+                  prefixIcon: Icon(LucideIcons.award, color: palette.text2, size: 18),
                   filled: true,
                   fillColor: Colors.transparent,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: TulRadius.brMd,
                     borderSide: BorderSide.none,
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: TulRadius.brMd,
                     borderSide: BorderSide.none,
                   ),
                 ),
-                dropdownColor: AppColors.surface,
-                style: const TextStyle(color: Colors.white, fontSize: 14),
-                iconEnabledColor: AppColors.textMuted,
+                dropdownColor: palette.card,
+                style: TextStyle(color: palette.text, fontSize: 14),
+                iconEnabledColor: palette.text2,
                 items: belts
                     .map((b) => DropdownMenuItem(
                         value: b, child: Text('belt.$b'.tr())))
@@ -765,7 +929,7 @@ class _StudentProfileView extends StatelessWidget {
               ctrl: startYearCtrl,
               label: 'auth.trainingStartYear'.tr(),
               hint: 'auth.trainingStartYearHint'.tr(),
-              icon: Icons.calendar_today_outlined,
+              icon: LucideIcons.calendar,
               keyboardType: TextInputType.number,
               action: TextInputAction.next,
               isOptional: true,
@@ -775,7 +939,7 @@ class _StudentProfileView extends StatelessWidget {
               ctrl: inviteCodeCtrl,
               label: 'auth.inviteCode'.tr(),
               hint: 'auth.inviteCodeHint'.tr(),
-              icon: Icons.qr_code_outlined,
+              icon: LucideIcons.qrCode,
               action: TextInputAction.done,
               textCapitalization: TextCapitalization.characters,
               isOptional: true,
@@ -820,6 +984,7 @@ class _InstructorProfileView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -831,29 +996,23 @@ class _InstructorProfileView extends StatelessWidget {
             const SizedBox(height: 24),
             _StepDots(current: 2, total: 3),
             const SizedBox(height: 20),
-            RichText(
-              text: TextSpan(
-                style: Theme.of(context)
-                    .textTheme
-                    .headlineSmall
-                    ?.copyWith(fontWeight: FontWeight.w800),
-                children: [
-                  const TextSpan(text: 'Set up your '),
-                  TextSpan(
-                      text: 'dojang',
-                      style: TextStyle(color: AppColors.secondary)),
-                ],
-              ),
+            Text('Set up your', style: TulTextStyles.title(color: palette.text)),
+            GradientText(
+              'dojang',
+              gradient: TulGradients.instructor,
+              style: TulTextStyles.title(),
             ),
-            const SizedBox(height: 6),
-            Text('auth.instructorProfileSubtitle'.tr(),
-                style: TextStyle(fontSize: 13, color: AppColors.textMuted)),
+            const SizedBox(height: 8),
+            Text(
+              'auth.instructorProfileSubtitle'.tr(),
+              style: TulTextStyles.small(color: palette.text2),
+            ),
             const SizedBox(height: 28),
             _AuthField(
               ctrl: dojoNameCtrl,
               label: 'auth.dojoName'.tr(),
               hint: 'auth.dojoNameHint'.tr(),
-              icon: Icons.home_work_outlined,
+              icon: LucideIcons.building2,
               action: TextInputAction.next,
             ),
             const SizedBox(height: 14),
@@ -861,7 +1020,7 @@ class _InstructorProfileView extends StatelessWidget {
               ctrl: danRankCtrl,
               label: 'auth.danRank'.tr(),
               hint: 'auth.danRankHint'.tr(),
-              icon: Icons.emoji_events_outlined,
+              icon: LucideIcons.trophy,
               action: TextInputAction.done,
             ),
             if (error != null) ...[
@@ -893,14 +1052,16 @@ class _GradBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
+    final enabled = onTap != null;
     return GestureDetector(
-      onTap: onTap != null ? () => onTap!() : null,
+      onTap: enabled ? () => onTap!() : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         height: 54,
         decoration: BoxDecoration(
-          gradient: onTap != null ? AppColors.gradMain : null,
-          color: onTap == null ? AppColors.muted : null,
+          gradient: enabled ? TulGradients.brand : null,
+          color: enabled ? null : palette.muted,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Center(
@@ -911,11 +1072,14 @@ class _GradBtn extends StatelessWidget {
                   child: CircularProgressIndicator(
                       strokeWidth: 2, color: Colors.white),
                 )
-              : Text(label,
+              : Text(
+                  label,
                   style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: onTap != null ? Colors.white : AppColors.textMuted)),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: enabled ? Colors.white : palette.text2,
+                  ),
+                ),
         ),
       ),
     );
@@ -936,20 +1100,26 @@ class _NavRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     return Row(
       children: [
-        GestureDetector(
-          onTap: onBack,
-          child: Container(
-            height: 54,
-            width: 54,
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
+        Expanded(
+          child: GestureDetector(
+            onTap: onBack,
+            child: Container(
+              height: 54,
+              decoration: BoxDecoration(
+                color: palette.card,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: palette.border),
+              ),
+              child: Center(
+                child: Text(
+                  'Back',
+                  style: TulTextStyles.bodyMd(color: palette.text),
+                ),
+              ),
             ),
-            child:
-                Icon(Icons.chevron_left_rounded, color: AppColors.text, size: 22),
           ),
         ),
         const SizedBox(width: 12),
@@ -971,18 +1141,18 @@ class _BackBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     return GestureDetector(
       onTap: onBack,
       child: Container(
         width: 36,
         height: 36,
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: palette.card,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: palette.border),
         ),
-        child: Icon(Icons.chevron_left_rounded,
-            color: AppColors.text, size: 20),
+        child: Icon(LucideIcons.chevronLeft, color: palette.text, size: 18),
       ),
     );
   }
@@ -995,27 +1165,31 @@ class _StepDots extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     return Row(
       children: [
         for (int i = 0; i < total; i++) ...[
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            width: i == current ? 24 : 8,
-            height: 8,
-            decoration: BoxDecoration(
-              color: i <= current ? AppColors.primary : AppColors.muted,
-              borderRadius: BorderRadius.circular(4),
+          Expanded(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              height: 3,
+              decoration: BoxDecoration(
+                gradient: i <= current ? TulGradients.brand : null,
+                color: i <= current ? null : palette.track,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
           ),
-          if (i < total - 1) const SizedBox(width: 6),
+          if (i < total - 1) const SizedBox(width: 4),
         ],
-        const SizedBox(width: 10),
+        const SizedBox(width: 12),
         Text(
-          'auth.stepOf'.tr(namedArgs: {
-            'step': '${current + 1}',
-            'total': '$total',
-          }),
-          style: TextStyle(fontSize: 11, color: AppColors.textMuted),
+          'STEP ${current + 1} / $total',
+          style: TulTextStyles.mono(
+            size: 11,
+            color: palette.text2,
+            letterSpacing: 1.5,
+          ),
         ),
       ],
     );
@@ -1033,6 +1207,7 @@ class _AuthField extends StatelessWidget {
     this.textCapitalization = TextCapitalization.none,
     this.onChanged,
     this.isOptional = false,
+    this.helperText,
   });
 
   final TextEditingController ctrl;
@@ -1044,41 +1219,50 @@ class _AuthField extends StatelessWidget {
   final TextCapitalization textCapitalization;
   final void Function(String)? onChanged;
   final bool isOptional;
+  final String? helperText;
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: ctrl,
-      textInputAction: action,
-      keyboardType: keyboardType,
-      textCapitalization: textCapitalization,
-      onChanged: onChanged,
-      style: const TextStyle(fontSize: 14, color: Colors.white),
-      decoration: InputDecoration(
-        labelText: isOptional ? '$label  (optional)' : label,
-        labelStyle: TextStyle(color: AppColors.textMuted, fontSize: 12),
-        hintText: hint,
-        hintStyle: TextStyle(color: AppColors.textDisabled, fontSize: 13),
-        prefixIcon: icon != null
-            ? Icon(icon, size: 18, color: AppColors.textMuted)
-            : null,
-        filled: true,
-        fillColor: AppColors.surfaceVariant,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide.none,
+    final palette = context.tul;
+    final displayLabel = isOptional ? '$label  (optional)' : label;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(displayLabel, style: TulTextStyles.smallStrong(color: palette.text2)),
+        const SizedBox(height: 6),
+        TextField(
+          controller: ctrl,
+          textInputAction: action,
+          keyboardType: keyboardType,
+          textCapitalization: textCapitalization,
+          onChanged: onChanged,
+          style: TextStyle(fontSize: 14, color: palette.text),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: TulTextStyles.small(color: palette.text3),
+            filled: true,
+            fillColor: palette.card,
+            border: OutlineInputBorder(
+              borderRadius: TulRadius.brMd,
+              borderSide: BorderSide(color: palette.border),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: TulRadius.brMd,
+              borderSide: BorderSide(color: palette.border),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: TulRadius.brMd,
+              borderSide: BorderSide(color: palette.primary, width: 1.5),
+            ),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          ),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: AppColors.primary, width: 1.5),
-        ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      ),
+        if (helperText != null) ...[
+          const SizedBox(height: 4),
+          Text(helperText!, style: TulTextStyles.tiny(color: palette.text3)),
+        ],
+      ],
     );
   }
 }
@@ -1092,6 +1276,8 @@ class _PasswordField extends StatelessWidget {
     this.action = TextInputAction.next,
     this.onSubmit,
     this.onChanged,
+    this.helperText,
+    this.helperColor,
   });
 
   final TextEditingController ctrl;
@@ -1101,47 +1287,59 @@ class _PasswordField extends StatelessWidget {
   final TextInputAction action;
   final void Function(String)? onSubmit;
   final void Function(String)? onChanged;
+  final String? helperText;
+  final Color? helperColor;
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: ctrl,
-      obscureText: obscure,
-      textInputAction: action,
-      onSubmitted: onSubmit,
-      onChanged: onChanged,
-      style: const TextStyle(fontSize: 14, color: Colors.white),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: TextStyle(color: AppColors.textMuted, fontSize: 12),
-        prefixIcon:
-            Icon(Icons.lock_outline_rounded, size: 18, color: AppColors.textMuted),
-        suffixIcon: IconButton(
-          icon: Icon(
-              obscure
-                  ? Icons.visibility_outlined
-                  : Icons.visibility_off_outlined,
-              size: 18,
-              color: AppColors.textMuted),
-          onPressed: onToggle,
+    final palette = context.tul;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: TulTextStyles.smallStrong(color: palette.text2)),
+        const SizedBox(height: 6),
+        TextField(
+          controller: ctrl,
+          obscureText: obscure,
+          textInputAction: action,
+          onSubmitted: onSubmit,
+          onChanged: onChanged,
+          style: TextStyle(fontSize: 14, color: palette.text),
+          decoration: InputDecoration(
+            suffixIcon: IconButton(
+              icon: Icon(
+                obscure ? LucideIcons.eye : LucideIcons.eyeOff,
+                size: 18,
+                color: palette.text2,
+              ),
+              onPressed: onToggle,
+            ),
+            filled: true,
+            fillColor: palette.card,
+            border: OutlineInputBorder(
+              borderRadius: TulRadius.brMd,
+              borderSide: BorderSide(color: palette.border),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: TulRadius.brMd,
+              borderSide: BorderSide(color: palette.border),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: TulRadius.brMd,
+              borderSide: BorderSide(color: palette.primary, width: 1.5),
+            ),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          ),
         ),
-        filled: true,
-        fillColor: AppColors.surfaceVariant,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: AppColors.primary, width: 1.5),
-        ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      ),
+        if (helperText != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            helperText!,
+            style: TulTextStyles.tiny(color: helperColor ?? palette.text3),
+          ),
+        ],
+      ],
     );
   }
 }
@@ -1165,6 +1363,7 @@ class _RoleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -1173,10 +1372,10 @@ class _RoleCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected
               ? accentColor.withValues(alpha: 0.07)
-              : AppColors.surface,
+              : palette.card,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: selected ? accentColor : AppColors.border,
+            color: selected ? accentColor : palette.border,
             width: selected ? 1.5 : 1,
           ),
         ),
@@ -1190,30 +1389,31 @@ class _RoleCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(icon,
-                  size: 24, color: selected ? accentColor : AppColors.textMuted),
+                  size: 24, color: selected ? accentColor : palette.text2),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title,
-                      style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: selected ? accentColor : AppColors.text)),
+                  Text(
+                    title,
+                    style: TulTextStyles.bodyStrong(
+                      color: selected ? accentColor : palette.text,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text(desc,
-                      style: TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textMuted,
-                          height: 1.4)),
+                  Text(
+                    desc,
+                    style: TulTextStyles.small(color: palette.text2)
+                        .copyWith(height: 1.4),
+                  ),
                 ],
               ),
             ),
             if (selected) ...[
               const SizedBox(width: 8),
-              Icon(Icons.check_circle_rounded, color: accentColor, size: 20),
+              Icon(LucideIcons.checkCircle, color: accentColor, size: 20),
             ],
           ],
         ),
@@ -1228,24 +1428,24 @@ class _ErrorBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.1),
+        color: palette.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+        border: Border.all(color: palette.primary.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
-          Icon(Icons.error_outline_rounded,
-              color: AppColors.primary, size: 16),
+          Icon(LucideIcons.alertCircle, color: palette.primary, size: 16),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(message,
-                style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w500)),
+            child: Text(
+              message,
+              style: TulTextStyles.small(color: palette.primary)
+                  .copyWith(fontWeight: FontWeight.w500),
+            ),
           ),
         ],
       ),
