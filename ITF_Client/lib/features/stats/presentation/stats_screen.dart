@@ -617,6 +617,7 @@ class _TrainingDonutCardState extends State<_TrainingDonutCard> {
       BuildContext context, String tierLabel, List<Map<String, dynamic>> students) {
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
@@ -748,6 +749,7 @@ class _HomeworkDonutCardState extends State<_HomeworkDonutCard> {
         (widget.hw[key] as List?)?.cast<Map<String, dynamic>>() ?? [];
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),

@@ -12,7 +12,6 @@ import '../../features/journal/presentation/journal_screen.dart';
 import '../../features/learn/presentation/learn_screen.dart';
 import '../../features/pose_analysis/presentation/pose_analysis_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
-import '../../features/stats/presentation/stats_screen.dart';
 import '../../shared/widgets/app_shell.dart';
 import 'app_routes.dart';
 
@@ -97,7 +96,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: AppRoutes.stats,
-                builder: (context, state) => const StatsScreen(),
+                builder: (context, state) => const SettingsScreen(),
               ),
             ],
           ),

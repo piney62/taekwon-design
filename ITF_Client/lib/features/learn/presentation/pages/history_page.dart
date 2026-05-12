@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/tul_gradients.dart';
 import '../../../../core/theme/tul_palette.dart';
 import '../../../../core/theme/tul_text_styles.dart';
@@ -15,7 +14,6 @@ class HistoryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: TulAppBar(
         title: 'learn.history'.tr(),
         onBack: () => Navigator.pop(context),

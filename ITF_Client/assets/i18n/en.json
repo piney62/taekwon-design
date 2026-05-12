@@ -42,7 +42,10 @@
     "statsAvgScore": "Avg Score",
     "viewAll": "View All",
     "thisWeek": "This Week",
-    "instructorDojoHint": "Manage students and generate invite codes in the Dojo tab."
+    "instructorDojoHint": "Manage students and generate invite codes in the Dojo tab.",
+    "todayFocus": "Today's Focus",
+    "startTraining": "Start Training",
+    "viewDetails": "View Details"
   },
   "pose": {
     "title": "AI Pose Analysis",
@@ -86,6 +89,8 @@
     "cameraError": "Camera error",
     "tulLabel": "Pattern",
     "movementLabel": "Movement",
+    "scoreCaption": "Compared to master reference",
+    "scoreDesc": "Form, stance and technique scored against the ITF reference for this exact movement.",
     "saveBtn": "Save Analysis",
     "savedBtn": "Saved",
     "saveConfirmTitle": "Save Analysis",
@@ -328,7 +333,10 @@
     "allPatterns": "All Patterns ({count})",
     "itfReference": "ITF Reference",
     "studyNow": "Study Now",
-    "details": "Details"
+    "details": "Details",
+    "searchHint": "Search patterns...",
+    "searchHintTerminology": "Search Korean or English...",
+    "noResults": "No results"
   },
   "settings": {
     "title": "Profile",
@@ -420,7 +428,14 @@
     "danRankHint": "e.g. 3rd Dan",
     "next": "Continue",
     "back": "Back",
-    "stepOf": "{step} / {total}"
+    "stepOf": "{step} / {total}",
+    "splashTagline": "MASTER EVERY PATTERN",
+    "createYour": "Create your",
+    "accountAccent": "account",
+    "passwordsMatch": "✓  Passwords match.",
+    "setupYour": "Set up your",
+    "profileAccent": "profile",
+    "dojoAccent": "dojang"
   },
   "dojo": {
     "title": "Dojo",

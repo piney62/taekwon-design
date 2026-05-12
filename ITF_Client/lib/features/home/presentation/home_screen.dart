@@ -98,12 +98,12 @@ class HomeScreen extends ConsumerWidget {
                       // ── Today's Focus feature card ───────────────────────
                       FeatureCard(
                         icon: LucideIcons.zap,
-                        label: "Today's Focus",
+                        label: 'home.todayFocus'.tr(),
                         title: _currentPattern(beltLevel),
                         body: 'home.todayRecommendation'.tr(),
                         progress: beltPct.toDouble(),
-                        primaryLabel: 'Start Training',
-                        secondaryLabel: 'View Details',
+                        primaryLabel: 'home.startTraining'.tr(),
+                        secondaryLabel: 'home.viewDetails'.tr(),
                         onPrimary: () => context.go(AppRoutes.poseAnalysis),
                         onSecondary: () => context.go(AppRoutes.learn),
                       ),
@@ -346,25 +346,6 @@ class _StudentHeader extends StatelessWidget {
                     ?.copyWith(height: 1.1),
               ),
             ],
-          ),
-        ),
-        const SizedBox(width: 12),
-        Material(
-          color: palette.card,
-          borderRadius: TulRadius.brLg,
-          child: InkWell(
-            onTap: () => context.push(AppRoutes.settings),
-            borderRadius: TulRadius.brLg,
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                borderRadius: TulRadius.brLg,
-                border: Border.all(color: palette.border),
-              ),
-              alignment: Alignment.center,
-              child: Icon(LucideIcons.settings, size: 18, color: palette.text),
-            ),
           ),
         ),
       ],
@@ -702,25 +683,6 @@ class _InstructorHeader extends StatelessWidget {
                 style: TulTextStyles.title(),
               ),
             ],
-          ),
-        ),
-        const SizedBox(width: 12),
-        Material(
-          color: palette.card,
-          borderRadius: TulRadius.brLg,
-          child: InkWell(
-            onTap: () => context.push(AppRoutes.settings),
-            borderRadius: TulRadius.brLg,
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                borderRadius: TulRadius.brLg,
-                border: Border.all(color: palette.border),
-              ),
-              alignment: Alignment.center,
-              child: Icon(LucideIcons.settings, size: 18, color: palette.text),
-            ),
           ),
         ),
       ],

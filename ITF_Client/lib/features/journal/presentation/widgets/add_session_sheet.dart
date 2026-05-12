@@ -177,7 +177,8 @@ class _AddSessionSheetState extends ConsumerState<AddSessionSheet> {
             // Scrollable form
             ConstrainedBox(
               constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.60,
+                maxHeight: (MediaQuery.of(context).size.height
+                            - MediaQuery.of(context).viewInsets.bottom) * 0.55,
               ),
               child: SingleChildScrollView(
                 padding: EdgeInsets.zero,

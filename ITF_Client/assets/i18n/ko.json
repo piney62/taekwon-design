@@ -42,7 +42,10 @@
     "statsAvgScore": "평균 점수",
     "viewAll": "전체 보기",
     "thisWeek": "이번 주",
-    "instructorDojoHint": "도장 탭에서 수련생 관리 및 초대코드를 생성하세요."
+    "instructorDojoHint": "도장 탭에서 수련생 관리 및 초대코드를 생성하세요.",
+    "todayFocus": "오늘의 집중 품새",
+    "startTraining": "훈련 시작",
+    "viewDetails": "자세히 보기"
   },
   "pose": {
     "title": "AI 자세 분석",
@@ -86,6 +89,8 @@
     "cameraError": "카메라 오류",
     "tulLabel": "품새",
     "movementLabel": "동작",
+    "scoreCaption": "마스터 기준 자세와 비교",
+    "scoreDesc": "해당 동작의 ITF 기준 자세와 비교하여 자세, 서기, 기술을 점수화합니다.",
     "saveBtn": "분석 자료 보관",
     "savedBtn": "보관됨",
     "saveConfirmTitle": "분석 자료 보관",
@@ -328,7 +333,10 @@
     "allPatterns": "전체 틀 ({count}개)",
     "itfReference": "ITF 참고자료",
     "studyNow": "지금 학습",
-    "details": "자세히"
+    "details": "자세히",
+    "searchHint": "품새 검색...",
+    "searchHintTerminology": "한국어 또는 영문 검색...",
+    "noResults": "결과 없음"
   },
   "settings": {
     "title": "프로필",
@@ -420,7 +428,14 @@
     "danRankHint": "예: 3단",
     "next": "계속",
     "back": "이전",
-    "stepOf": "{step} / {total}"
+    "stepOf": "{step} / {total}",
+    "splashTagline": "모든 품새를 완벽하게",
+    "createYour": "새 계정",
+    "accountAccent": "만들기",
+    "passwordsMatch": "✓  비밀번호가 일치합니다.",
+    "setupYour": "프로필",
+    "profileAccent": "설정하기",
+    "dojoAccent": "도장 정보"
   },
   "dojo": {
     "title": "도장 관리",

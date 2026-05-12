@@ -26,6 +26,7 @@ class TulModalSheet extends StatelessWidget {
   }) {
     return showModalBottomSheet<T>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: isScrollControlled,
       backgroundColor: Colors.transparent,
       builder: (ctx) {

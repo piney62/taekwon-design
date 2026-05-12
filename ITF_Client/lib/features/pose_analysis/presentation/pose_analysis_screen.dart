@@ -645,12 +645,12 @@ class _InfoCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Compared to master reference',
+                  'pose.scoreCaption'.tr(),
                   style: TulTextStyles.smallStrong(color: palette.text),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Form, stance and technique scored against the ITF reference for this exact movement.',
+                  'pose.scoreDesc'.tr(),
                   style: TulTextStyles.tiny(color: palette.text2)
                       .copyWith(height: 1.5),
                 ),
@@ -798,6 +798,7 @@ class _ResultSection extends StatelessWidget {
   ) {
     showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
@@ -1610,6 +1611,7 @@ class _RecordCard extends StatelessWidget {
       String movName, String dateLabel, String feedback, int? score) {
     showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) {

@@ -9,6 +9,7 @@ import 'package:video_player/video_player.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/tul_palette.dart';
 import '../../../../core/theme/tul_text_styles.dart';
+import '../../../../shared/widgets/app_shell.dart';
 import '../../../../shared/widgets/segmented_control.dart';
 import '../../../../shared/widgets/tul_app_bar.dart';
 import '../../../../shared/widgets/tul_card.dart';
@@ -87,7 +88,6 @@ class _PatternDetailScreenState extends ConsumerState<PatternDetailScreen> {
     final totalPages = widget.pattern.moves + 1;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: TulAppBar(
         title:
             '${widget.index}. ${widget.pattern.name} (${widget.pattern.korean})',
@@ -365,7 +365,7 @@ class _MoveNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final palette = context.tul;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12 + kAppShellContentBottomInset),
       child: TulCard(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         child: Row(

@@ -107,10 +107,9 @@ class _AllSessionsScreenState extends ConsumerState<AllSessionsScreen> {
   Future<void> _addSession() async {
     final session = await showModalBottomSheet<TrainingSession>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (_) => const AddSessionSheet(),
     );
     if (session != null) {
@@ -122,10 +121,9 @@ class _AllSessionsScreenState extends ConsumerState<AllSessionsScreen> {
   Future<void> _editSession(TrainingSession existing) async {
     final session = await showModalBottomSheet<TrainingSession>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (_) => AddSessionSheet(existing: existing),
     );
     if (session != null) {

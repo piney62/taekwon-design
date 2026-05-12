@@ -16,6 +16,7 @@ Future<void> showTheoryTestSheet(
     {void Function(int score)? onPassed}) {
   return showModalBottomSheet<void>(
     context: context,
+    useRootNavigator: true,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     builder: (_) => _TheoryTestSheet(beltLevel: beltLevel, onPassed: onPassed),

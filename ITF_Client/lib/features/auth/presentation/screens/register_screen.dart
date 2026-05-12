@@ -396,7 +396,7 @@ class _SplashViewState extends State<_SplashView>
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          'MASTER EVERY PATTERN',
+                          'auth.splashTagline'.tr(),
                           style: TulTextStyles.mono(
                             size: 12,
                             color: const Color(0xFFA3A3A8),
@@ -762,9 +762,9 @@ class _CredentialsView extends StatelessWidget {
             const SizedBox(height: 24),
             _StepDots(current: 1, total: 3),
             const SizedBox(height: 20),
-            Text('Create your', style: TulTextStyles.title(color: palette.text)),
+            Text('auth.createYour'.tr(), style: TulTextStyles.title(color: palette.text)),
             GradientText(
-              'account',
+              'auth.accountAccent'.tr(),
               gradient: TulGradients.brand,
               style: TulTextStyles.title(),
             ),
@@ -819,7 +819,7 @@ class _CredentialsView extends StatelessWidget {
               onChanged: (_) => onChanged(),
               helperText: confirmCtrl.text.isNotEmpty &&
                       passCtrl.text == confirmCtrl.text
-                  ? '✓  Passwords match.'
+                  ? 'auth.passwordsMatch'.tr()
                   : null,
               helperColor: palette.green,
             ),
@@ -879,9 +879,9 @@ class _StudentProfileView extends StatelessWidget {
             const SizedBox(height: 24),
             _StepDots(current: 2, total: 3),
             const SizedBox(height: 20),
-            Text('Set up your', style: TulTextStyles.title(color: palette.text)),
+            Text('auth.setupYour'.tr(), style: TulTextStyles.title(color: palette.text)),
             GradientText(
-              'profile',
+              'auth.profileAccent'.tr(),
               gradient: TulGradients.brand,
               style: TulTextStyles.title(),
             ),
@@ -996,9 +996,9 @@ class _InstructorProfileView extends StatelessWidget {
             const SizedBox(height: 24),
             _StepDots(current: 2, total: 3),
             const SizedBox(height: 20),
-            Text('Set up your', style: TulTextStyles.title(color: palette.text)),
+            Text('auth.setupYour'.tr(), style: TulTextStyles.title(color: palette.text)),
             GradientText(
-              'dojang',
+              'auth.dojoAccent'.tr(),
               gradient: TulGradients.instructor,
               style: TulTextStyles.title(),
             ),
@@ -1115,7 +1115,7 @@ class _NavRow extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  'Back',
+                  'auth.back'.tr(),
                   style: TulTextStyles.bodyMd(color: palette.text),
                 ),
               ),

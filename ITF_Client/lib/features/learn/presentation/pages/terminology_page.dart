@@ -2,7 +2,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/tul_palette.dart';
 import '../../../../core/theme/tul_text_styles.dart';
 import '../../../../shared/widgets/app_shell.dart' show kAppShellContentBottomInset;
@@ -43,7 +42,6 @@ class _TerminologyPageState extends State<TerminologyPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: TulAppBar(
         title: 'learn.terminology'.tr(),
         onBack: () => Navigator.pop(context),
@@ -81,7 +79,7 @@ class _TerminologyPageState extends State<TerminologyPage> {
           onChanged: (v) => setState(() => _query = v),
           style: TextStyle(color: palette.text, fontSize: 13),
           decoration: InputDecoration(
-            hintText: 'Search Korean or English...',
+            hintText: 'learn.searchHintTerminology'.tr(),
             hintStyle: TextStyle(color: palette.text3, fontSize: 13),
             prefixIcon:
                 Icon(LucideIcons.search, size: 16, color: palette.text3),
@@ -98,9 +96,8 @@ class _TerminologyPageState extends State<TerminologyPage> {
     if (items.isEmpty) {
       return Center(
         child: Text(
-          'No results',
-          style: TextStyle(
-              color: context.tul.text3, fontSize: 14),
+          'learn.noResults'.tr(),
+          style: TextStyle(color: context.tul.text3, fontSize: 14),
         ),
       );
     }

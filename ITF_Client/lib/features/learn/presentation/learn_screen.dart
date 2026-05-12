@@ -67,7 +67,6 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
     final palette = context.tul;
     final filtered = _filtered;
     return Scaffold(
-      backgroundColor: AppColors.background,
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
@@ -141,7 +140,7 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
           onChanged: (v) => setState(() => _query = v),
           style: TextStyle(color: palette.text, fontSize: 14),
           decoration: InputDecoration(
-            hintText: 'Search patterns...',
+            hintText: 'learn.searchHint'.tr(),
             hintStyle: TextStyle(color: palette.text3, fontSize: 14),
             prefixIcon:
                 Icon(LucideIcons.search, size: 18, color: palette.text3),
@@ -161,7 +160,7 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
         icon: LucideIcons.book,
         label: 'learn.currentPattern'.tr(),
         title: '${p.name} (${p.korean})',
-        body: '${p.moves} movements · White Belt',
+        body: '${'learn.movesCount'.tr(namedArgs: {'count': '${p.moves}'})} · ${'belt.white'.tr()}',
         progress: 65,
         primaryLabel: 'learn.studyNow'.tr(),
         secondaryLabel: 'learn.details'.tr(),
