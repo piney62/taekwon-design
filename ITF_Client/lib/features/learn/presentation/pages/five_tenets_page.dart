@@ -2,7 +2,11 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
-import '../../../../shared/widgets/app_shell.dart';
+import '../../../../core/theme/tul_palette.dart';
+import '../../../../core/theme/tul_text_styles.dart';
+import '../../../../shared/widgets/app_shell.dart' show kAppShellContentBottomInset;
+import '../../../../shared/widgets/tul_app_bar.dart';
+import '../../../../shared/widgets/tul_card.dart';
 
 class FiveTenetsPage extends StatelessWidget {
   const FiveTenetsPage({super.key});
@@ -11,43 +15,15 @@ class FiveTenetsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildTopBar(context),
-            Expanded(
-              child: ListView.separated(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, kAppShellContentBottomInset),
-                itemCount: _tenets.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 10),
-                itemBuilder: (context, i) => _TenetCard(tenet: _tenets[i]),
-              ),
-            ),
-          ],
-        ),
+      appBar: TulAppBar(
+        title: 'learn.fiveSpirits'.tr(),
+        onBack: () => Navigator.pop(context),
       ),
-    );
-  }
-
-  Widget _buildTopBar(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.chevron_left, size: 28),
-            color: AppColors.text,
-          ),
-          Text(
-            'learn.fiveSpirits'.tr(),
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: AppColors.text,
-            ),
-          ),
-        ],
+      body: ListView.separated(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, kAppShellContentBottomInset),
+        itemCount: _tenets.length,
+        separatorBuilder: (_, _) => const SizedBox(height: 10),
+        itemBuilder: (context, i) => _TenetCard(tenet: _tenets[i]),
       ),
     );
   }
@@ -60,16 +36,17 @@ class _TenetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     final locale = Localizations.localeOf(context).languageCode;
     final desc = locale == 'ko' ? tenet.descKo : tenet.descEn;
+    final color = switch (tenet.accent) {
+      _Accent.primary => palette.primary,
+      _Accent.secondary => palette.secondary,
+      _Accent.accent => palette.accent,
+    };
 
-    return Container(
+    return TulCard(
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -78,18 +55,17 @@ class _TenetCard extends StatelessWidget {
               Container(
                 width: 44,
                 height: 44,
+                alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: tenet.color.withValues(alpha: 0.15),
+                  color: color.withValues(alpha: 0.14),
                   borderRadius: BorderRadius.circular(13),
                 ),
-                child: Center(
-                  child: Text(
-                    tenet.han[0],
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: tenet.color,
-                    ),
+                child: Text(
+                  tenet.han[0],
+                  style: TulTextStyles.korean(
+                    size: 18,
+                    weight: FontWeight.w700,
+                    color: color,
                   ),
                 ),
               ),
@@ -100,32 +76,24 @@ class _TenetCard extends StatelessWidget {
                   children: [
                     Text(
                       tenet.english,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.text,
-                      ),
+                      style: TulTextStyles.cardHeader(color: palette.text)
+                          .copyWith(fontSize: 16),
                     ),
+                    const SizedBox(height: 2),
                     Text(
                       '${tenet.korean} · ${tenet.han}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textDisabled,
-                      ),
+                      style: TulTextStyles.small(color: palette.text3),
                     ),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           Text(
             desc,
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppColors.textMuted,
-              height: 1.6,
-            ),
+            style: TulTextStyles.subtitle(color: palette.text2)
+                .copyWith(height: 1.6),
           ),
         ],
       ),
@@ -135,12 +103,14 @@ class _TenetCard extends StatelessWidget {
 
 // ── Data ───────────────────────────────────────────────────────────────────────
 
+enum _Accent { primary, secondary, accent }
+
 class _Tenet {
   const _Tenet({
     required this.english,
     required this.korean,
     required this.han,
-    required this.color,
+    required this.accent,
     required this.descKo,
     required this.descEn,
   });
@@ -148,7 +118,7 @@ class _Tenet {
   final String english;
   final String korean;
   final String han;
-  final Color color;
+  final _Accent accent;
   final String descKo;
   final String descEn;
 }
@@ -158,7 +128,7 @@ const _tenets = [
     english: 'Courtesy',
     korean: '예의',
     han: '禮儀',
-    color: AppColors.primary,
+    accent: _Accent.primary,
     descKo:
         '상대방을 존중하고 예의 바르게 행동하는 것. '
         '도장 안팎에서 인사를 철저히 하고, '
@@ -170,7 +140,7 @@ const _tenets = [
     english: 'Integrity',
     korean: '염치',
     han: '廉恥',
-    color: AppColors.secondary,
+    accent: _Accent.secondary,
     descKo:
         '옳고 그름을 알고 부끄러운 행동을 하지 않는 것. '
         '양심에 따라 행동하고 거짓이나 부정직함을 멀리하는 자세.',
@@ -181,7 +151,7 @@ const _tenets = [
     english: 'Perseverance',
     korean: '인내',
     han: '忍耐',
-    color: AppColors.accent,
+    accent: _Accent.accent,
     descKo:
         '어떤 어려움에도 포기하지 않고 꾸준히 나아가는 것. '
         '훈련의 고통과 실패를 이겨내고 목표를 향해 끝까지 나아가는 정신.',
@@ -192,7 +162,7 @@ const _tenets = [
     english: 'Self-Control',
     korean: '극기',
     han: '克己',
-    color: AppColors.primary,
+    accent: _Accent.primary,
     descKo:
         '자신의 감정과 행동을 스스로 다스리는 것. '
         '분노, 두려움, 욕심을 절제하고 흔들리지 않는 마음을 갖는 훈련.',
@@ -203,7 +173,7 @@ const _tenets = [
     english: 'Indomitable Spirit',
     korean: '백절불굴',
     han: '百折不屈',
-    color: AppColors.secondary,
+    accent: _Accent.secondary,
     descKo:
         '백 번 꺾여도 굴하지 않는 불굴의 의지. '
         '정의를 위해 강한 자 앞에서도 굴복하지 않고, '

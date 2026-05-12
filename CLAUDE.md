@@ -81,11 +81,11 @@ Theme-aware color extension — access via `context.tul`. Defined in `core/theme
 | 2 | Port 16 tul_* shared widgets (add-only, zero UI change) | ✅ done |
 | 3-1 | AppShell tab bar redesign + kAppShellContentBottomInset on **all** screens | ✅ done |
 | 3-2 | Redesign Student HomeScreen (FeatureCard + StatCard) | ✅ done |
-| 3-3 | Redesign Instructor HomeScreen | 🔲 next |
-| 3-4 | Register flow redesign + splash + welcome with logo | 🔲 |
-| 3-5 | Journal screen + sheets/details | 🔲 |
-| 3-6 | InstructorDojo + StudentDetail | 🔲 |
-| 3-7 | Learn + PatternDetail + Terminology / Tenets / History | 🔲 |
+| 3-3 | Redesign Instructor HomeScreen | ✅ done |
+| 3-4 | Register flow redesign + splash + welcome with logo | ✅ done |
+| 3-5 | Journal screen + sheets/details | ✅ done |
+| 3-6 | InstructorDojo + StudentDetail | ✅ done |
+| 3-7 | Learn + PatternDetail + Terminology / Tenets / History | ✅ done |
 | 3-8 | CoachScreen (chat bubbles + composer) | 🔲 |
 | 3-9 | PoseAnalysisScreen (UI shell only, ML untouched) | 🔲 |
 | 3-10 | Settings + re-wire StatsScreen | 🔲 |

@@ -3,9 +3,15 @@ import 'package:chewie/chewie.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/tul_palette.dart';
+import '../../../../core/theme/tul_text_styles.dart';
+import '../../../../shared/widgets/segmented_control.dart';
+import '../../../../shared/widgets/tul_app_bar.dart';
+import '../../../../shared/widgets/tul_card.dart';
 import '../../application/pattern_image_provider.dart';
 import '../../domain/entities/pattern.dart';
 
@@ -25,7 +31,8 @@ class PatternDetailScreen extends ConsumerStatefulWidget {
   final int index;
 
   @override
-  ConsumerState<PatternDetailScreen> createState() => _PatternDetailScreenState();
+  ConsumerState<PatternDetailScreen> createState() =>
+      _PatternDetailScreenState();
 }
 
 class _PatternDetailScreenState extends ConsumerState<PatternDetailScreen> {
@@ -61,10 +68,14 @@ class _PatternDetailScreenState extends ConsumerState<PatternDetailScreen> {
   Widget build(BuildContext context) {
     final badgeText = _moveIndex == 0
         ? 'learn.moveReady'.tr()
-        : 'learn.badgeTextFmt'.tr(namedArgs: {'no': _moveIndex.toString(), 'total': widget.pattern.moves.toString()});
+        : 'learn.badgeTextFmt'.tr(namedArgs: {
+            'no': _moveIndex.toString(),
+            'total': widget.pattern.moves.toString()
+          });
     final navLabel = _moveIndex == 0
         ? 'learn.preparationMove'.tr()
-        : 'learn.moveNumberFmt'.tr(namedArgs: {'no': _moveIndex.toString()});
+        : 'learn.moveNumberFmt'
+            .tr(namedArgs: {'no': _moveIndex.toString()});
 
     final faction = ref.watch(currentFactionProvider);
     final versionsAsync = ref.watch(patternVersionsProvider(faction));
@@ -77,19 +88,24 @@ class _PatternDetailScreenState extends ConsumerState<PatternDetailScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        title: Text(
-          '${widget.index}. ${widget.pattern.name} (${widget.pattern.korean})',
-          style: const TextStyle(fontSize: 16),
-        ),
+      appBar: TulAppBar(
+        title:
+            '${widget.index}. ${widget.pattern.name} (${widget.pattern.korean})',
+        onBack: () => Navigator.pop(context),
       ),
       body: Column(
         children: [
           // 탭 선택
-          _TabBar(
-            showVideo: _showVideo,
-            onToggle: (v) => setState(() => _showVideo = v),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: SegmentedControl<bool>(
+              segments: [
+                (false, 'learn.imageStudy'.tr()),
+                (true, 'learn.videoStudy'.tr()),
+              ],
+              value: _showVideo,
+              onChanged: (v) => setState(() => _showVideo = v),
+            ),
           ),
 
           // 이미지 뷰어 / 동영상 플레이어
@@ -123,7 +139,8 @@ class _PatternDetailScreenState extends ConsumerState<PatternDetailScreen> {
                         top: 12,
                         left: 12,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
                             color: Colors.black54,
                             borderRadius: BorderRadius.circular(20),
@@ -145,11 +162,17 @@ class _PatternDetailScreenState extends ConsumerState<PatternDetailScreen> {
                         child: IconButton(
                           onPressed: () {
                             final url = patternImageUrl(
-                              widget.pattern.slug, _moveIndex, _direction, version,
+                              widget.pattern.slug,
+                              _moveIndex,
+                              _direction,
+                              version,
                               faction: faction,
                             );
                             final cacheKey = patternImageCacheKey(
-                              widget.pattern.slug, _moveIndex, _direction, version,
+                              widget.pattern.slug,
+                              _moveIndex,
+                              _direction,
+                              version,
                               faction: faction,
                             );
                             Navigator.push(
@@ -176,9 +199,14 @@ class _PatternDetailScreenState extends ConsumerState<PatternDetailScreen> {
 
           // 이미지 탭일 때만 방향 선택 / 동작 네비게이션 표시
           if (!_showVideo) ...[
-            _DirectionBar(
-              selected: _direction,
-              onSelect: (d) => setState(() => _direction = d),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+              child: SegmentedControl<String>(
+                segments:
+                    _directions.map((d) => (d, _dirLabel(d))).toList(),
+                value: _direction,
+                onChanged: (d) => setState(() => _direction = d),
+              ),
             ),
             _MoveNavBar(
               label: navLabel,
@@ -188,67 +216,7 @@ class _PatternDetailScreenState extends ConsumerState<PatternDetailScreen> {
               onNext: () => _goToMove(_moveIndex + 1),
             ),
           ],
-
         ],
-      ),
-    );
-  }
-}
-
-// ─── 탭 선택 바 ──────────────────────────────────────────────────────────────
-
-class _TabBar extends StatelessWidget {
-  const _TabBar({required this.showVideo, required this.onToggle});
-
-  final bool showVideo;
-  final ValueChanged<bool> onToggle;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.surface,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        children: [
-          Expanded(child: _TabButton(label: 'learn.imageStudy'.tr(), selected: !showVideo, onTap: () => onToggle(false))),
-          const SizedBox(width: 8),
-          Expanded(child: _TabButton(label: 'learn.videoStudy'.tr(), selected: showVideo, onTap: () => onToggle(true))),
-        ],
-      ),
-    );
-  }
-}
-
-class _TabButton extends StatelessWidget {
-  const _TabButton({required this.label, required this.selected, required this.onTap});
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        decoration: BoxDecoration(
-          color: selected ? AppColors.itfRed : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: selected ? AppColors.itfRed : AppColors.outline,
-          ),
-        ),
-        child: Text(
-          label,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: selected ? Colors.white : AppColors.textSecondary,
-            fontSize: 13,
-            fontWeight: selected ? FontWeight.bold : FontWeight.normal,
-          ),
-        ),
       ),
     );
   }
@@ -317,15 +285,19 @@ class _VideoSectionState extends State<_VideoSection> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator(color: AppColors.itfRed));
+      return const Center(
+          child: CircularProgressIndicator(color: AppColors.itfRed));
     }
     if (_hasError) {
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.videocam_off_outlined, size: 64, color: AppColors.textDisabled),
+          const Icon(Icons.videocam_off_outlined,
+              size: 64, color: AppColors.textDisabled),
           const SizedBox(height: 8),
-          Text('learn.videoLoading'.tr(), style: const TextStyle(color: AppColors.textDisabled, fontSize: 13)),
+          Text('learn.videoLoading'.tr(),
+              style: const TextStyle(
+                  color: AppColors.textDisabled, fontSize: 13)),
         ],
       );
     }
@@ -352,9 +324,8 @@ class _MoveImage extends StatelessWidget {
         fit: BoxFit.contain,
         width: double.infinity,
         height: double.infinity,
-        placeholder: (context, url) => const Center(
-          child: CircularProgressIndicator(color: AppColors.itfRed),
-        ),
+        placeholder: (context, url) =>
+            const Center(child: CircularProgressIndicator(color: AppColors.itfRed)),
         errorWidget: (context, url, error) => Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -363,55 +334,11 @@ class _MoveImage extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'learn.imageLoading'.tr(),
-              style: const TextStyle(color: AppColors.textDisabled, fontSize: 13),
+              style: const TextStyle(
+                  color: AppColors.textDisabled, fontSize: 13),
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-// ─── 방향 탭 ──────────────────────────────────────────────────────────────────
-
-class _DirectionBar extends StatelessWidget {
-  const _DirectionBar({required this.selected, required this.onSelect});
-
-  final String selected;
-  final ValueChanged<String> onSelect;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.surface,
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: _directions.map((d) {
-          final isSelected = d == selected;
-          return GestureDetector(
-            onTap: () => onSelect(d),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              decoration: BoxDecoration(
-                color: isSelected ? AppColors.itfRed : Colors.transparent,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: isSelected ? AppColors.itfRed : AppColors.outline,
-                ),
-              ),
-              child: Text(
-                _dirLabel(d),
-                style: TextStyle(
-                  color: isSelected ? Colors.white : AppColors.textSecondary,
-                  fontSize: 13,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                ),
-              ),
-            ),
-          );
-        }).toList(),
       ),
     );
   }
@@ -436,31 +363,57 @@ class _MoveNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.surfaceVariant,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          IconButton(
-            onPressed: canPrev ? onPrev : null,
-            icon: const Icon(Icons.chevron_left, size: 32),
-            color: canPrev ? AppColors.itfRed : AppColors.textDisabled,
-          ),
-          Text(
-            label,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
+    final palette = context.tul;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      child: TulCard(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(
+          children: [
+            _NavChip(
+              icon: LucideIcons.chevronLeft,
+              onTap: canPrev ? onPrev : null,
             ),
+            Expanded(
+              child: Text(
+                label,
+                textAlign: TextAlign.center,
+                style: TulTextStyles.bodyStrong(color: palette.text),
+              ),
+            ),
+            _NavChip(
+              icon: LucideIcons.chevronRight,
+              onTap: canNext ? onNext : null,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NavChip extends StatelessWidget {
+  const _NavChip({required this.icon, this.onTap});
+
+  final IconData icon;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.tul;
+    return Opacity(
+      opacity: onTap == null ? 0.35 : 1.0,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Icon(
+            icon,
+            size: 22,
+            color: onTap == null ? palette.text3 : palette.text,
           ),
-          IconButton(
-            onPressed: canNext ? onNext : null,
-            icon: const Icon(Icons.chevron_right, size: 32),
-            color: canNext ? AppColors.itfRed : AppColors.textDisabled,
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -486,7 +439,8 @@ class _FullscreenImagePage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
-        title: Text(label, style: const TextStyle(color: Colors.white, fontSize: 15)),
+        title: Text(label,
+            style: const TextStyle(color: Colors.white, fontSize: 15)),
       ),
       body: Center(
         child: InteractiveViewer(
@@ -503,9 +457,12 @@ class _FullscreenImagePage extends StatelessWidget {
             errorWidget: (context, url, error) => Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.image_not_supported_outlined, size: 64, color: Colors.white38),
+                const Icon(Icons.image_not_supported_outlined,
+                    size: 64, color: Colors.white38),
                 const SizedBox(height: 8),
-                Text('learn.imageLoading'.tr(), style: const TextStyle(color: Colors.white38, fontSize: 13)),
+                Text('learn.imageLoading'.tr(),
+                    style: const TextStyle(
+                        color: Colors.white38, fontSize: 13)),
               ],
             ),
           ),

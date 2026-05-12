@@ -1,8 +1,14 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../core/theme/app_colors.dart';
-import '../../../../shared/widgets/app_shell.dart';
+import '../../../../core/theme/tul_palette.dart';
+import '../../../../core/theme/tul_text_styles.dart';
+import '../../../../shared/widgets/app_shell.dart' show kAppShellContentBottomInset;
+import '../../../../shared/widgets/filter_chips.dart';
+import '../../../../shared/widgets/tul_app_bar.dart';
+import '../../../../shared/widgets/tul_card.dart';
 
 class TerminologyPage extends StatefulWidget {
   const TerminologyPage({super.key});
@@ -12,7 +18,7 @@ class TerminologyPage extends StatefulWidget {
 }
 
 class _TerminologyPageState extends State<TerminologyPage> {
-  String _cat = 'stance';
+  String _cat = 'Stances';
   String _query = '';
   final _searchCtrl = TextEditingController();
 
@@ -38,112 +44,49 @@ class _TerminologyPageState extends State<TerminologyPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildTopBar(context),
-            _buildChips(),
-            _buildSearchBar(),
-            Expanded(child: _buildList()),
-          ],
-        ),
+      appBar: TulAppBar(
+        title: 'learn.terminology'.tr(),
+        onBack: () => Navigator.pop(context),
       ),
-    );
-  }
-
-  Widget _buildTopBar(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
-      child: Row(
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.chevron_left, size: 28),
-            color: AppColors.text,
-          ),
-          Text(
-            'learn.terminology'.tr(),
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: AppColors.text,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+            child: FilterChipsRow(
+              options: _data.keys.toList(),
+              selected: _cat,
+              onSelect: (v) => setState(() => _cat = v),
             ),
           ),
+          _buildSearchBar(context),
+          Expanded(child: _buildList()),
         ],
       ),
     );
   }
 
-  Widget _buildChips() {
-    final cats = [
-      ('stance', 'Stances'),
-      ('block', 'Blocks'),
-      ('kick', 'Kicks'),
-      ('strike', 'Strikes'),
-    ];
-    return SizedBox(
-      height: 44,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
-        children: cats.map((c) {
-          final selected = _cat == c.$1;
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: GestureDetector(
-              onTap: () => setState(() => _cat = c.$1),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                decoration: BoxDecoration(
-                  color: selected
-                      ? AppColors.primary
-                      : AppColors.surface,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: selected ? AppColors.primary : AppColors.border,
-                  ),
-                ),
-                child: Text(
-                  c.$2,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color:
-                        selected ? Colors.white : AppColors.textMuted,
-                  ),
-                ),
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(BuildContext context) {
+    final palette = context.tul;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: palette.card,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: palette.border),
         ),
         child: TextField(
           controller: _searchCtrl,
           onChanged: (v) => setState(() => _query = v),
-          style: const TextStyle(color: AppColors.text, fontSize: 13),
-          decoration: const InputDecoration(
+          style: TextStyle(color: palette.text, fontSize: 13),
+          decoration: InputDecoration(
             hintText: 'Search Korean or English...',
-            hintStyle:
-                TextStyle(color: AppColors.textDisabled, fontSize: 13),
-            prefixIcon: Icon(Icons.search_rounded,
-                size: 18, color: AppColors.textDisabled),
+            hintStyle: TextStyle(color: palette.text3, fontSize: 13),
+            prefixIcon:
+                Icon(LucideIcons.search, size: 16, color: palette.text3),
             border: InputBorder.none,
-            contentPadding: EdgeInsets.symmetric(vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(vertical: 12),
           ),
         ),
       ),
@@ -156,12 +99,14 @@ class _TerminologyPageState extends State<TerminologyPage> {
       return Center(
         child: Text(
           'No results',
-          style: const TextStyle(color: AppColors.textDisabled, fontSize: 14),
+          style: TextStyle(
+              color: context.tul.text3, fontSize: 14),
         ),
       );
     }
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, kAppShellContentBottomInset),
+      padding:
+          const EdgeInsets.fromLTRB(16, 0, 16, kAppShellContentBottomInset),
       itemCount: items.length,
       separatorBuilder: (_, _) => const SizedBox(height: 8),
       itemBuilder: (context, i) => _TermCard(term: items[i]),
@@ -176,13 +121,9 @@ class _TermCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final palette = context.tul;
+    return TulCard(
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -192,20 +133,19 @@ class _TermCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   term.korean,
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.text,
+                  style: TulTextStyles.korean(
+                    size: 17,
+                    weight: FontWeight.w700,
+                    color: palette.text,
                   ),
                 ),
               ),
               if (term.romanized.isNotEmpty)
                 Text(
                   term.romanized,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: AppColors.textDisabled,
-                    fontFamily: 'monospace',
+                  style: TulTextStyles.mono(
+                    size: 11,
+                    color: palette.text3,
                   ),
                 ),
             ],
@@ -213,20 +153,14 @@ class _TermCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             term.english,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: AppColors.primary,
-            ),
+            style: TulTextStyles.subtitle(color: palette.primary),
           ),
           if (term.desc.isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(
               term.desc,
-              style: const TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textMuted,
-                  height: 1.5),
+              style: TulTextStyles.small(color: palette.text2)
+                  .copyWith(height: 1.5),
             ),
           ],
         ],
@@ -247,7 +181,7 @@ class _Term {
 }
 
 const _data = <String, List<_Term>>{
-  'stance': [
+  'Stances': [
     _Term('차렷 서기', 'Charyot Sogi', 'Attention Stance'),
     _Term('앞서기', 'Ap Sogi', 'Walking Stance (short)'),
     _Term('앞굽이', 'Ap Kubi', 'Walking Stance (long)',
@@ -261,7 +195,7 @@ const _data = <String, List<_Term>>{
     _Term('학다리 서기', 'Hakdari Sogi', 'One-Leg Stance'),
     _Term('꼬아 서기', 'Gyotdarim Sogi', 'X-Stance'),
   ],
-  'block': [
+  'Blocks': [
     _Term('아래막기', 'Najunde Makgi', 'Low Block',
         'Forearm sweeps downward across body.'),
     _Term('몸통막기', 'Kaunde Makgi', 'Middle Block'),
@@ -273,7 +207,7 @@ const _data = <String, List<_Term>>{
     _Term('쌍수막기', 'Ssangsu Makgi', 'Twin Forearm Block'),
     _Term('연거푸막기', 'Yonkeo Makgi', 'Consecutive Block'),
   ],
-  'kick': [
+  'Kicks': [
     _Term('앞차기', 'Ap Chagi', 'Front Kick',
         'Knee chambers, foot snaps forward.'),
     _Term('옆차기', 'Yop Chagi', 'Side Kick'),
@@ -285,7 +219,7 @@ const _data = <String, List<_Term>>{
     _Term('내려차기', 'Naeryo Chagi', 'Downward Kick'),
     _Term('후려차기', 'Huryeo Chagi', 'Hooking Kick'),
   ],
-  'strike': [
+  'Strikes': [
     _Term('지르기', 'Jireugi', 'Punch',
         'Fist drives in straight line to target.'),
     _Term('몸통 지르기', 'Kaunde Jireugi', 'Middle Punch'),

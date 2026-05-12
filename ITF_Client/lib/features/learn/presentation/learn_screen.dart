@@ -2,11 +2,18 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/tul_gradients.dart';
+import '../../../core/theme/tul_palette.dart';
+import '../../../core/theme/tul_text_styles.dart';
 import '../../../shared/widgets/app_shell.dart' show kAppShellContentBottomInset;
+import '../../../shared/widgets/feature_card.dart';
 import '../../../shared/widgets/grad_header_text.dart';
+import '../../../shared/widgets/list_row.dart';
+import '../../../shared/widgets/tul_card.dart';
 import '../domain/entities/pattern.dart';
 import 'pages/five_tenets_page.dart';
 import 'pages/history_page.dart';
@@ -57,6 +64,7 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     final filtered = _filtered;
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -64,7 +72,7 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
         child: CustomScrollView(
           slivers: [
             SliverToBoxAdapter(child: _buildHeader()),
-            SliverToBoxAdapter(child: _buildSearch()),
+            SliverToBoxAdapter(child: _buildSearch(palette)),
             SliverToBoxAdapter(child: _buildCurrentCard()),
             SliverToBoxAdapter(
               child: Padding(
@@ -72,11 +80,7 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
                 child: Text(
                   'learn.allPatterns'.tr(
                       namedArgs: {'count': itfPatterns.length.toString()}),
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.text,
-                  ),
+                  style: TulTextStyles.cardHeader(color: palette.text),
                 ),
               ),
             ),
@@ -116,35 +120,33 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
           const SizedBox(height: 6),
           Text(
             'learn.patternsSubtitle'.tr(),
-            style:
-                const TextStyle(fontSize: 14, color: AppColors.textMuted),
+            style: const TextStyle(fontSize: 14, color: AppColors.textMuted),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSearch() {
+  Widget _buildSearch(TulPalette palette) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: palette.card,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: palette.border),
         ),
         child: TextField(
           controller: _searchCtrl,
           onChanged: (v) => setState(() => _query = v),
-          style: const TextStyle(color: AppColors.text, fontSize: 14),
-          decoration: const InputDecoration(
+          style: TextStyle(color: palette.text, fontSize: 14),
+          decoration: InputDecoration(
             hintText: 'Search patterns...',
-            hintStyle:
-                TextStyle(color: AppColors.textDisabled, fontSize: 14),
-            prefixIcon: Icon(Icons.search_rounded,
-                size: 20, color: AppColors.textDisabled),
+            hintStyle: TextStyle(color: palette.text3, fontSize: 14),
+            prefixIcon:
+                Icon(LucideIcons.search, size: 18, color: palette.text3),
             border: InputBorder.none,
-            contentPadding: EdgeInsets.symmetric(vertical: 14),
+            contentPadding: const EdgeInsets.symmetric(vertical: 14),
           ),
         ),
       ),
@@ -155,99 +157,16 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
     final p = itfPatterns[0];
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: AppColors.gradMain,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.menu_book_rounded,
-                    size: 16, color: Colors.white70),
-                const SizedBox(width: 6),
-                Text(
-                  'learn.currentPattern'.tr(),
-                  style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.white70,
-                      letterSpacing: 0.5),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Text(
-              '${p.name} (${p.korean})',
-              style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '${p.moves} movements · White Belt',
-              style: const TextStyle(fontSize: 13, color: Colors.white70),
-            ),
-            const SizedBox(height: 14),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: const LinearProgressIndicator(
-                value: 0.65,
-                backgroundColor: Colors.white24,
-                color: Colors.white,
-                minHeight: 4,
-              ),
-            ),
-            const SizedBox(height: 14),
-            Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => _openDetail(p, 1),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        'learn.studyNow'.tr(),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                GestureDetector(
-                  onTap: () => _openDetail(p, 1),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 10, horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.white24,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      'learn.details'.tr(),
-                      style: const TextStyle(
-                          fontSize: 13,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+      child: FeatureCard(
+        icon: LucideIcons.book,
+        label: 'learn.currentPattern'.tr(),
+        title: '${p.name} (${p.korean})',
+        body: '${p.moves} movements · White Belt',
+        progress: 65,
+        primaryLabel: 'learn.studyNow'.tr(),
+        secondaryLabel: 'learn.details'.tr(),
+        onPrimary: () => _openDetail(p, 1),
+        onSecondary: () => _openDetail(p, 1),
       ),
     );
   }
@@ -255,28 +174,18 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
   Widget _buildReference() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.border),
-        ),
-        padding: const EdgeInsets.all(16),
+      child: TulCard(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'learn.itfReference'.tr(),
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: AppColors.text,
-              ),
+              style: TulTextStyles.cardHeader(color: context.tul.text),
             ),
-            const SizedBox(height: 12),
-            _RefRow(
-              icon: Icons.menu_book_rounded,
-              iconColor: AppColors.primary,
+            const SizedBox(height: 4),
+            ListRow(
+              icon: LucideIcons.library,
+              iconColor: ListRowColor.primary,
               title: 'learn.terminology'.tr(),
               sub: 'learn.terminologyDesc'.tr(),
               onTap: () => Navigator.push(
@@ -285,9 +194,9 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
                     builder: (_) => const TerminologyPage()),
               ),
             ),
-            _RefRow(
-              icon: Icons.star_rounded,
-              iconColor: AppColors.secondary,
+            ListRow(
+              icon: LucideIcons.award,
+              iconColor: ListRowColor.secondary,
               title: 'learn.fiveSpirits'.tr(),
               sub: 'learn.fiveSpiritsDesc'.tr(),
               onTap: () => Navigator.push(
@@ -296,9 +205,9 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
                     builder: (_) => const FiveTenetsPage()),
               ),
             ),
-            _RefRow(
-              icon: Icons.history_edu_rounded,
-              iconColor: AppColors.accent,
+            ListRow(
+              icon: LucideIcons.bookOpen,
+              iconColor: ListRowColor.accent,
               title: 'learn.history'.tr(),
               sub: 'learn.historyDesc'.tr(),
               onTap: () => Navigator.push(
@@ -306,13 +215,12 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
                 MaterialPageRoute<void>(builder: (_) => const HistoryPage()),
               ),
             ),
-            _RefRow(
-              icon: Icons.chat_rounded,
-              iconColor: AppColors.primary,
+            ListRow(
+              icon: LucideIcons.messageCircle,
+              iconColor: ListRowColor.primary,
               title: 'learn.aiCoach'.tr(),
               sub: 'learn.aiCoachDesc'.tr(),
               onTap: () => context.push(AppRoutes.coach),
-              isLast: true,
             ),
           ],
         ),
@@ -340,167 +248,72 @@ class _PatternRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
       child: Opacity(
         opacity: unlocked ? 1.0 : 0.55,
-        child: GestureDetector(
+        child: TulCard(
+          padding: const EdgeInsets.all(12),
           onTap: unlocked ? onTap : null,
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isCurrent
-                    ? AppColors.primary.withValues(alpha: 0.3)
-                    : AppColors.border,
-              ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    gradient: isCurrent
-                        ? AppColors.gradMain
-                        : unlocked
-                            ? AppColors.gradSoft
-                            : null,
-                    color: unlocked ? null : AppColors.muted,
-                    borderRadius: BorderRadius.circular(11),
-                  ),
-                  child: unlocked
-                      ? Center(
-                          child: Text(
-                            '${index + 1}',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: isCurrent
-                                  ? Colors.white
-                                  : AppColors.text,
-                            ),
-                          ),
-                        )
-                      : const Icon(Icons.lock_rounded,
-                          size: 16, color: AppColors.textDisabled),
+          borderColor:
+              isCurrent ? palette.primary.withValues(alpha: 0.3) : null,
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  gradient: isCurrent
+                      ? TulGradients.brand
+                      : unlocked
+                          ? TulGradients.brandSoft
+                          : null,
+                  color: unlocked ? null : palette.muted,
+                  borderRadius: BorderRadius.circular(11),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      RichText(
-                        text: TextSpan(
-                          children: [
-                            TextSpan(
-                              text: pattern.name,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.text,
-                              ),
-                            ),
-                            TextSpan(
-                              text: ' (${pattern.korean})',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w400,
-                                color: AppColors.textDisabled,
-                              ),
-                            ),
-                          ],
+                child: unlocked
+                    ? Text(
+                        '${index + 1}',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: isCurrent ? Colors.white : palette.text,
                         ),
+                      )
+                    : Icon(LucideIcons.lock, size: 16, color: palette.text3),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text.rich(
+                      TextSpan(
+                        text: pattern.name,
+                        style: TulTextStyles.bodyStrong(color: palette.text),
+                        children: [
+                          TextSpan(
+                            text: '  (${pattern.korean})',
+                            style: TulTextStyles.body(color: palette.text3),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${pattern.moves} movements · ${pattern.beltEn}',
-                        style: const TextStyle(
-                            fontSize: 11, color: AppColors.textMuted),
-                      ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${pattern.moves} movements · ${pattern.beltEn}',
+                      style: TulTextStyles.tiny(color: palette.text3),
+                    ),
+                  ],
                 ),
-                const Icon(Icons.chevron_right,
-                    size: 16, color: AppColors.textDisabled),
-              ],
-            ),
+              ),
+              Icon(LucideIcons.chevronRight, size: 16, color: palette.text3),
+            ],
           ),
         ),
       ),
-    );
-  }
-}
-
-// ── Reference row ──────────────────────────────────────────────────────────────
-
-class _RefRow extends StatelessWidget {
-  const _RefRow({
-    required this.icon,
-    required this.iconColor,
-    required this.title,
-    required this.sub,
-    required this.onTap,
-    this.isLast = false,
-  });
-
-  final IconData icon;
-  final Color iconColor;
-  final String title;
-  final String sub;
-  final VoidCallback onTap;
-  final bool isLast;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: iconColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(icon, size: 18, color: iconColor),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.text),
-                      ),
-                      Text(
-                        sub,
-                        style: const TextStyle(
-                            fontSize: 11, color: AppColors.textMuted),
-                      ),
-                    ],
-                  ),
-                ),
-                const Icon(Icons.chevron_right,
-                    size: 16, color: AppColors.textDisabled),
-              ],
-            ),
-          ),
-        ),
-        if (!isLast) Divider(height: 1, color: AppColors.border),
-      ],
     );
   }
 }

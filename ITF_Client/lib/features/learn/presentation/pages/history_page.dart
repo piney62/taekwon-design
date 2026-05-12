@@ -2,7 +2,12 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
-import '../../../../shared/widgets/app_shell.dart';
+import '../../../../core/theme/tul_gradients.dart';
+import '../../../../core/theme/tul_palette.dart';
+import '../../../../core/theme/tul_text_styles.dart';
+import '../../../../shared/widgets/app_shell.dart' show kAppShellContentBottomInset;
+import '../../../../shared/widgets/gradient_text.dart';
+import '../../../../shared/widgets/tul_app_bar.dart';
 
 class HistoryPage extends StatelessWidget {
   const HistoryPage({super.key});
@@ -11,45 +16,18 @@ class HistoryPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildTopBar(context),
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, kAppShellContentBottomInset),
-                itemCount: _events.length,
-                itemBuilder: (context, i) => _TimelineItem(
-                  event: _events[i],
-                  isLast: i == _events.length - 1,
-                ),
-              ),
-            ),
-          ],
-        ),
+      appBar: TulAppBar(
+        title: 'learn.history'.tr(),
+        onBack: () => Navigator.pop(context),
       ),
-    );
-  }
-
-  Widget _buildTopBar(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.chevron_left, size: 28),
-            color: AppColors.text,
-          ),
-          Text(
-            'learn.history'.tr(),
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: AppColors.text,
-            ),
-          ),
-        ],
+      body: ListView.builder(
+        padding:
+            const EdgeInsets.fromLTRB(16, 8, 16, kAppShellContentBottomInset),
+        itemCount: _events.length,
+        itemBuilder: (context, i) => _TimelineItem(
+          event: _events[i],
+          isLast: i == _events.length - 1,
+        ),
       ),
     );
   }
@@ -63,91 +41,100 @@ class _TimelineItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     final locale = Localizations.localeOf(context).languageCode;
     final title = locale == 'ko' ? event.titleKo : event.titleEn;
     final desc = locale == 'ko' ? event.descKo : event.descEn;
-    final dotColor =
-        event.isHighlight ? AppColors.primary : AppColors.textDisabled;
+    final isToday = event.year == 'Today';
 
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // timeline column
+          // Timeline rail
           SizedBox(
-            width: 24,
+            width: 28,
             child: Column(
               children: [
-                const SizedBox(height: 6),
                 Container(
-                  width: 12,
-                  height: 12,
+                  width: 14,
+                  height: 14,
+                  margin: const EdgeInsets.only(top: 4),
                   decoration: BoxDecoration(
-                    color: dotColor,
+                    gradient: isToday ? TulGradients.brand : null,
+                    color: isToday
+                        ? null
+                        : (event.isHighlight
+                            ? palette.primary
+                            : palette.text3),
                     shape: BoxShape.circle,
+                    border: Border.all(
+                      color: palette.stage,
+                      width: 3,
+                    ),
+                    boxShadow: isToday
+                        ? [
+                            BoxShadow(
+                              color: palette.primary.withValues(alpha: 0.4),
+                              blurRadius: 12,
+                            ),
+                          ]
+                        : null,
                   ),
                 ),
                 if (!isLast)
                   Expanded(
                     child: Container(
                       width: 2,
-                      margin: const EdgeInsets.symmetric(vertical: 4),
-                      color: AppColors.border,
+                      color: palette.border,
                     ),
                   ),
               ],
             ),
           ),
           const SizedBox(width: 12),
+          // Content
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.only(bottom: 14),
-              child: Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: event.isHighlight
-                      ? AppColors.primary.withValues(alpha: 0.08)
-                      : AppColors.surface,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: event.isHighlight
-                        ? AppColors.primary.withValues(alpha: 0.25)
-                        : AppColors.border,
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+              padding: EdgeInsets.only(bottom: isLast ? 0 : 22),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (isToday)
+                    GradientText(
+                      event.year,
+                      gradient: TulGradients.brand,
+                      style: TulTextStyles.mono(
+                        size: 11,
+                        weight: FontWeight.w700,
+                        letterSpacing: 1.3,
+                      ),
+                    )
+                  else
                     Text(
                       event.year,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
+                      style: TulTextStyles.mono(
+                        size: 11,
+                        weight: FontWeight.w700,
                         color: event.isHighlight
-                            ? AppColors.primary
-                            : AppColors.textMuted,
+                            ? palette.primary
+                            : palette.text3,
+                        letterSpacing: 1.3,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.text,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      desc,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textMuted,
-                        height: 1.5,
-                      ),
-                    ),
-                  ],
-                ),
+                  const SizedBox(height: 4),
+                  Text(
+                    title,
+                    style: TulTextStyles.cardHeader(color: palette.text)
+                        .copyWith(fontSize: 16),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    desc,
+                    style: TulTextStyles.subtitle(color: palette.text2)
+                        .copyWith(height: 1.6),
+                  ),
+                ],
               ),
             ),
           ),
