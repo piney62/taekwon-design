@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../core/theme/tul_colors.dart';
 import '../../core/theme/tul_gradients.dart';
@@ -22,29 +21,42 @@ class WelcomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 60),
-              Container(
-                width: 88,
-                height: 88,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  gradient: TulGradients.brand,
-                  borderRadius: BorderRadius.circular(26),
+              const SizedBox(height: 48),
+              // Logo with a subtle red bloom behind it
+              Center(
+                child: Container(
+                  width: 168,
+                  height: 168,
+                  alignment: Alignment.center,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [Color(0x29EF4444), Colors.transparent],
+                      stops: [0, 0.75],
+                    ),
+                  ),
+                  child: Image.asset(
+                    'assets/logo_white.png',
+                    width: 124,
+                    height: 124,
+                    fit: BoxFit.contain,
+                    filterQuality: FilterQuality.high,
+                  ),
                 ),
-                child: const Icon(LucideIcons.flame, size: 44, color: Colors.white),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 28),
               GradientText(
                 'TulMaster',
                 gradient: TulGradients.brand,
                 style: TulTextStyles.splashTitle(),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               Text(
-                "Master every pattern.\nTrain with precision.",
+                'Master every pattern.\nTrain with precision.',
                 textAlign: TextAlign.center,
-                style: TulTextStyles.subtitle(color: palette.text2),
+                style: TulTextStyles.subtitle(color: palette.text2)
+                    .copyWith(height: 1.55),
               ),
               const Spacer(),
               TulPrimaryButton(
