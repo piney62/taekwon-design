@@ -80,8 +80,8 @@ Theme-aware color extension — access via `context.tul`. Defined in `core/theme
 | 1 | Design tokens (tul_palette, tul_gradients, tul_shadows, tul_radius, tul_text_styles) | ✅ done |
 | 2 | Port 16 tul_* shared widgets (add-only, zero UI change) | ✅ done |
 | 3-1 | AppShell tab bar redesign + kAppShellContentBottomInset on **all** screens | ✅ done |
-| 3-2 | Redesign Student HomeScreen (FeatureCard + StatCard) | 🔲 next |
-| 3-3 | Redesign Instructor HomeScreen | 🔲 |
+| 3-2 | Redesign Student HomeScreen (FeatureCard + StatCard) | ✅ done |
+| 3-3 | Redesign Instructor HomeScreen | 🔲 next |
 | 3-4 | Register flow redesign + splash + welcome with logo | 🔲 |
 | 3-5 | Journal screen + sheets/details | 🔲 |
 | 3-6 | InstructorDojo + StudentDetail | 🔲 |
@@ -98,7 +98,7 @@ Theme-aware color extension — access via `context.tul`. Defined in `core/theme
 All screens below have been updated. Do not regress them.
 
 ```
-home_screen.dart              student ListView tail + instructor ListView padding
+home_screen.dart              student CustomScrollView tail + instructor ListView padding
 journal_screen.dart           SliverToBoxAdapter tail
 pose_analysis_screen.dart     SizedBox tail
 settings_screen.dart          SizedBox tail
