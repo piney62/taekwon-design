@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
+import 'tul_palette.dart';
 
 class AppTheme {
   AppTheme._();
@@ -78,6 +79,7 @@ class AppTheme {
       colorScheme: cs,
       scaffoldBackgroundColor: AppColors.background,
       textTheme: _buildTextTheme(dark: true),
+      extensions: const <ThemeExtension<dynamic>>[TulPalette.dark],
 
       appBarTheme: AppBarTheme(
         backgroundColor: AppColors.background,
@@ -262,6 +264,7 @@ class AppTheme {
       colorScheme: cs,
       scaffoldBackgroundColor: AppColors.lightBackground,
       textTheme: _buildTextTheme(dark: false),
+      extensions: const <ThemeExtension<dynamic>>[TulPalette.light],
 
       appBarTheme: AppBarTheme(
         backgroundColor: AppColors.lightSurface,
