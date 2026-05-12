@@ -112,9 +112,13 @@ class _PatternDetailScreenState extends ConsumerState<PatternDetailScreen> {
           Expanded(
             flex: 5,
             child: _showVideo
-                ? _VideoSection(
-                    slug: widget.pattern.slug,
-                    faction: faction,
+                ? Padding(
+                    padding: const EdgeInsets.only(
+                        bottom: kAppShellContentBottomInset),
+                    child: _VideoSection(
+                      slug: widget.pattern.slug,
+                      faction: faction,
+                    ),
                   )
                 : Stack(
                     children: [
