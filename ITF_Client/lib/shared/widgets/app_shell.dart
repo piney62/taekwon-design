@@ -26,9 +26,12 @@ class AppShell extends ConsumerWidget {
     final items = isInstructor ? _instructorTabs : _studentTabs;
 
     return Scaffold(
-      // Let the bar float over the bottom of the body so its blur picks up
-      // the underlying content tint instead of sitting on a hard cutoff.
-      extendBody: true,
+      // Keep the bar opaque-on-top so screens can scroll their content right
+      // up to the tab bar without having to reserve bottom padding themselves.
+      // extendBody: true sounded nice for the frosted effect, but it forced
+      // every screen to add a tab-bar-height bottom inset to avoid clipping
+      // the last item — a foot-gun for the dozen+ existing screens.
+      extendBody: false,
       body: navigationShell,
       bottomNavigationBar: _TulTabBar(
         items: items,
