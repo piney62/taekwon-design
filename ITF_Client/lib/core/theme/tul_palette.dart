@@ -78,7 +78,9 @@ class TulPalette extends ThemeExtension<TulPalette> {
     text3: AppColors.textDisabled,
     hover: Color(0x08FFFFFF),
     track: Color(0x1AFFFFFF),
-    tabbarBg: Color(0xF50A0A0C), // 0.96 alpha — opaque enough to read cleanly
+    // Fully opaque so taller screens (PoseAnalysis, Journal) can't bleed
+    // gradient/halo content through the tab bar's top edge.
+    tabbarBg: Color(0xFF0A0A0C),
     modalVeil: Color(0x8C000000),
     stripe: Color(0x0AFFFFFF),
     primary: AppColors.primary,
@@ -102,7 +104,7 @@ class TulPalette extends ThemeExtension<TulPalette> {
     text3: AppColors.lightTextDisabled,
     hover: Color(0x08000000),
     track: Color(0x14000000),
-    tabbarBg: Color(0xF7FFFFFF), // 0.97 alpha
+    tabbarBg: Color(0xFFFFFFFF), // fully opaque, matches dark side
     modalVeil: Color(0x590F0F14),
     stripe: Color(0x0A000000),
     primary: AppColors.lightPrimary,
