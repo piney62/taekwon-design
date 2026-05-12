@@ -37,7 +37,6 @@ class ReadinessDetailScreen extends ConsumerWidget {
     final nextBelt = _nextBeltLabel(beltLevel);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       body: readinessAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text(e.toString())),
@@ -456,15 +455,10 @@ class _GradientRingPainter extends CustomPainter {
     );
 
     // Gradient arc
-    final shader = SweepGradient(
-      startAngle: -math.pi / 2,
-      endAngle: 3 * math.pi / 2,
-      colors: const [
-        Color(0xFFEF4444),
-        Color(0xFFEC4899),
-        Color(0xFF3B82F6),
-      ],
-      stops: const [0.0, 0.5, 1.0],
+    final shader = const LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [AppColors.primary, AppColors.secondary],
     ).createShader(rect);
 
     canvas.drawArc(

@@ -45,7 +45,6 @@ class JournalScreen extends ConsumerWidget {
     final isDojo = authState.dojoConnected;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       body: state.isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
@@ -174,7 +173,9 @@ class JournalScreen extends ConsumerWidget {
   Future<void> _addSession(BuildContext context, WidgetRef ref) async {
     final session = await showModalBottomSheet<TrainingSession>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (_) => const AddSessionSheet(),
     );
     if (session != null) {
@@ -764,15 +765,10 @@ class _MiniRingPainter extends CustomPainter {
     );
 
     if (pct > 0) {
-      final shader = SweepGradient(
-        startAngle: -math.pi / 2,
-        endAngle: 3 * math.pi / 2,
-        colors: const [
-          Color(0xFFEF4444),
-          Color(0xFFEC4899),
-          Color(0xFF3B82F6),
-        ],
-        stops: const [0.0, 0.5, 1.0],
+      final shader = const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [AppColors.primary, AppColors.secondary],
       ).createShader(rect);
 
       canvas.drawArc(
@@ -1256,6 +1252,7 @@ class _WeeklyGoalCard extends ConsumerWidget {
   void _openSetup(BuildContext context, WidgetRef ref, WeeklyProgress progress) {
     showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
