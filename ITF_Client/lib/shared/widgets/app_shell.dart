@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +9,12 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/tul_palette.dart';
 import '../../core/theme/tul_radius.dart';
 import '../../features/auth/application/providers.dart';
+
+/// Pixels of bottom inset every scrolling screen should reserve so its
+/// last item isn't clipped by the floating tab bar. Tab bar runs ~62 px
+/// of content + a typical 28 px home-indicator/SafeArea bottom — 90 leaves
+/// a small breathing margin.
+const double kAppShellContentBottomInset = 96;
 
 /// Root scaffold for the authenticated tabs. Hosts the [StatefulNavigationShell]
 /// content and renders the brand bottom tab bar underneath.
@@ -24,16 +32,12 @@ class AppShell extends ConsumerWidget {
     final items = isInstructor ? _instructorTabs : _studentTabs;
 
     return Scaffold(
-      // Keep the bar above the body (extendBody: false) so screens don't have
-      // to reserve a tab-bar-height bottom inset to avoid clipping. A small
-      // outer Padding adds breathing room between body content and the bar —
-      // without it, cards (FeatureCard, halo elements) butt right up against
-      // the bar's top edge and look pinched.
-      extendBody: false,
-      body: Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: navigationShell,
-      ),
+      // Lets the body draw under the bar so its translucent fill picks up
+      // the content tint behind it. Each scrolling screen is responsible
+      // for reserving a tab-bar-height bottom spacer in its own content so
+      // the last item isn't clipped — see kAppShellContentBottomInset.
+      extendBody: true,
+      body: navigationShell,
       bottomNavigationBar: _TulTabBar(
         items: items,
         currentIndex: navigationShell.currentIndex,
@@ -152,25 +156,30 @@ class _TulTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = context.tul;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: palette.tabbarBg,
-        border: Border(top: BorderSide(color: palette.border)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(8, 8, 8, 6),
-          child: Row(
-            children: List.generate(items.length, (i) {
-              return Expanded(
-                child: _TabButton(
-                  item: items[i],
-                  selected: i == currentIndex,
-                  onTap: () => onTap(i),
-                ),
-              );
-            }),
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: Container(
+          decoration: BoxDecoration(
+            color: palette.tabbarBg,
+            border: Border(top: BorderSide(color: palette.border)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(8, 8, 8, 6),
+              child: Row(
+                children: List.generate(items.length, (i) {
+                  return Expanded(
+                    child: _TabButton(
+                      item: items[i],
+                      selected: i == currentIndex,
+                      onTap: () => onTap(i),
+                    ),
+                  );
+                }),
+              ),
+            ),
           ),
         ),
       ),

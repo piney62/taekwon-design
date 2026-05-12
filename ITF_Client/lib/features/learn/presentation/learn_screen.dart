@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/app_shell.dart' show kAppShellContentBottomInset;
 import '../../../shared/widgets/grad_header_text.dart';
 import '../domain/entities/pattern.dart';
 import 'pages/five_tenets_page.dart';
@@ -96,7 +97,9 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
               ),
             ),
             SliverToBoxAdapter(child: _buildReference()),
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            const SliverToBoxAdapter(
+              child: SizedBox(height: kAppShellContentBottomInset),
+            ),
           ],
         ),
       ),

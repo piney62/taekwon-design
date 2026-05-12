@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/app_shell.dart' show kAppShellContentBottomInset;
 import '../../auth/application/providers.dart';
 import '../../journal/application/providers.dart';
 import '../../journal/domain/entities/training_session.dart';
@@ -187,7 +188,9 @@ class HomeScreen extends ConsumerWidget {
               ),
             ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            const SliverToBoxAdapter(
+              child: SizedBox(height: kAppShellContentBottomInset),
+            ),
           ],
         ),
       ),
@@ -841,7 +844,8 @@ class _InstructorHome extends ConsumerWidget {
       body: SafeArea(
         bottom: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+          padding: const EdgeInsets.fromLTRB(
+              20, 8, 20, kAppShellContentBottomInset),
           children: [
             // ── Header ──────────────────────────────────────────────
             Row(

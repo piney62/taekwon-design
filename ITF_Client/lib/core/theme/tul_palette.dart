@@ -78,10 +78,7 @@ class TulPalette extends ThemeExtension<TulPalette> {
     text3: AppColors.textDisabled,
     hover: Color(0x08FFFFFF),
     track: Color(0x1AFFFFFF),
-    // Lightly translucent so the bar feels like it floats above the stage
-    // rather than a hard solid block. The 12px body inset (see AppShell)
-    // keeps card halos from leaking through this thin alpha.
-    tabbarBg: Color(0xE60A0A0C), // ~90% alpha
+    tabbarBg: Color(0xC70A0A0C), // 0.78 alpha — content tint reads through
     modalVeil: Color(0x8C000000),
     stripe: Color(0x0AFFFFFF),
     primary: AppColors.primary,
@@ -105,7 +102,7 @@ class TulPalette extends ThemeExtension<TulPalette> {
     text3: AppColors.lightTextDisabled,
     hover: Color(0x08000000),
     track: Color(0x14000000),
-    tabbarBg: Color(0xEDFFFFFF), // ~93% alpha — same intent as dark side
+    tabbarBg: Color(0xCCFFFFFF), // 0.80 alpha
     modalVeil: Color(0x590F0F14),
     stripe: Color(0x0A000000),
     primary: AppColors.lightPrimary,

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/backend_client.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/app_shell.dart' show kAppShellContentBottomInset;
 import '../../../shared/widgets/grad_header_text.dart';
 import '../../auth/application/providers.dart';
 import '../../settings/application/providers.dart';
@@ -154,7 +155,9 @@ class JournalScreen extends ConsumerWidget {
                       ),
                     ),
 
-                  const SliverToBoxAdapter(child: SizedBox(height: 32)),
+                  const SliverToBoxAdapter(
+                    child: SizedBox(height: kAppShellContentBottomInset),
+                  ),
                 ],
               ),
             ),
