@@ -88,7 +88,7 @@ Theme-aware color extension — access via `context.tul`. Defined in `core/theme
 | 3-7 | Learn + PatternDetail + Terminology / Tenets / History | ✅ done |
 | 3-8 | CoachScreen (chat bubbles + composer) | ✅ done |
 | 3-9 | PoseAnalysisScreen (UI shell only, ML untouched) | ✅ done |
-| 3-10 | Settings + re-wire StatsScreen | 🔲 |
+| 3-10 | Settings + re-wire StatsScreen | ✅ done |
 | 4 | Polish — logo, i18n keys, dark/light QA | 🔲 |
 
 ---

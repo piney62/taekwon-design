@@ -3,11 +3,20 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../core/network/backend_client.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/tul_gradients.dart';
+import '../../../../core/theme/tul_palette.dart';
+import '../../../../core/theme/tul_radius.dart';
+import '../../../../core/theme/tul_text_styles.dart';
 import '../../../../shared/widgets/app_shell.dart' show kAppShellContentBottomInset;
+import '../../../../shared/widgets/badge.dart';
 import '../../../../shared/widgets/grad_header_text.dart';
+import '../../../../shared/widgets/list_row.dart';
+import '../../../../shared/widgets/tul_buttons.dart';
+import '../../../../shared/widgets/tul_card.dart';
 import '../../../auth/application/providers.dart';
 import '../../application/providers.dart';
 import '../../domain/entities/belt_level.dart';
@@ -19,6 +28,7 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settingsAsync = ref.watch(settingsControllerProvider);
     final authState = ref.watch(authControllerProvider);
+    final palette = context.tul;
 
     return Scaffold(
       body: settingsAsync.when(
@@ -38,9 +48,7 @@ class SettingsScreen extends ConsumerWidget {
                       GradHeaderText('settings.title'.tr()),
                       Text(
                         'settings.user'.tr(),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
+                        style: TulTextStyles.subtitle(color: palette.text2),
                       ),
                       const SizedBox(height: 24),
 
@@ -48,132 +56,162 @@ class SettingsScreen extends ConsumerWidget {
                       _ProfileCard(authState: authState, settings: settings),
                       const SizedBox(height: 16),
 
-                      // ── Account section ──────────────────────────────
-                      _SectionLabel('Account'),
-                      const SizedBox(height: 8),
-                      _SectionCard(children: [
-                        _SettingsRow(
-                          icon: Icons.shield_outlined,
-                          iconColor: AppColors.primary,
-                          title: 'settings.changePassword'.tr(),
-                          subtitle: 'settings.passwordSubtitle'.tr(),
-                          onTap: () => showDialog<void>(
-                            context: context,
-                            builder: (_) => const _ChangePasswordDialog(),
-                          ),
+                      // ── Account ──────────────────────────────────────
+                      TulCard(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
+                              child: Text('Account',
+                                  style: TulTextStyles.cardHeader(color: palette.text)),
+                            ),
+                            ListRow(
+                              icon: LucideIcons.shield,
+                              iconColor: ListRowColor.primary,
+                              title: 'settings.changePassword'.tr(),
+                              sub: 'settings.passwordSubtitle'.tr(),
+                              onTap: () => showDialog<void>(
+                                context: context,
+                                builder: (_) => const _ChangePasswordDialog(),
+                              ),
+                            ),
+                          ],
                         ),
-                      ]),
+                      ),
                       const SizedBox(height: 16),
 
-                      // ── Preferences section ───────────────────────────
-                      _SectionLabel('settings.preferences'.tr()),
-                      const SizedBox(height: 8),
-                      _SectionCard(children: [
-                        // Theme
-                        _ThemeRow(
-                          current: settings.themeMode,
-                          onChanged: (v) => ref
-                              .read(settingsControllerProvider.notifier)
-                              .setThemeMode(v),
+                      // ── Preferences ───────────────────────────────────
+                      TulCard(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
+                              child: Text('settings.preferences'.tr(),
+                                  style: TulTextStyles.cardHeader(color: palette.text)),
+                            ),
+                            ListRow(
+                              icon: LucideIcons.moon,
+                              iconColor: ListRowColor.secondary,
+                              title: 'settings.theme'.tr(),
+                              sub: 'settings.themeSubtitle'.tr(),
+                              trailing: _valueTrailing(
+                                  context, _themeLabel(settings.themeMode)),
+                              onTap: () => showModalBottomSheet<void>(
+                                context: context,
+                                backgroundColor: Colors.transparent,
+                                builder: (_) => _ThemePicker(
+                                  current: settings.themeMode,
+                                  onChanged: (v) => ref
+                                      .read(settingsControllerProvider.notifier)
+                                      .setThemeMode(v),
+                                ),
+                              ),
+                            ),
+                            ListRow(
+                              icon: LucideIcons.globe,
+                              iconColor: ListRowColor.accent,
+                              title: 'settings.language'.tr(),
+                              sub: 'settings.languageSubtitle'.tr(),
+                              trailing: _valueTrailing(
+                                  context, _langLabel(settings.languageCode)),
+                              onTap: () => showModalBottomSheet<void>(
+                                context: context,
+                                backgroundColor: Colors.transparent,
+                                builder: (_) => _LanguagePicker(
+                                  current: settings.languageCode,
+                                  onChanged: (v) {
+                                    context.setLocale(Locale(v));
+                                    ref
+                                        .read(settingsControllerProvider.notifier)
+                                        .setLanguageCode(v);
+                                  },
+                                ),
+                              ),
+                            ),
+                            if (!authState.isInstructor)
+                              ListRow(
+                                icon: LucideIcons.award,
+                                iconColor: ListRowColor.primary,
+                                title: 'settings.beltLevel'.tr(),
+                                trailing: _valueTrailing(
+                                    context, settings.beltLevel.i18nKey.tr()),
+                                onTap: () => showModalBottomSheet<void>(
+                                  context: context,
+                                  backgroundColor: Colors.transparent,
+                                  builder: (_) => _BeltPicker(
+                                    current: settings.beltLevel,
+                                    onChanged: (v) => ref
+                                        .read(settingsControllerProvider.notifier)
+                                        .setBeltLevel(v),
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
-                        _Divider(),
-                        // Language
-                        _LanguageRow(
-                          current: settings.languageCode,
-                          onChanged: (v) {
-                            context.setLocale(Locale(v));
-                            ref
-                                .read(settingsControllerProvider.notifier)
-                                .setLanguageCode(v);
-                          },
-                        ),
-                        // Belt Level (student only)
-                        if (!authState.isInstructor) ...[
-                          _Divider(),
-                          _BeltRow(
-                            current: settings.beltLevel,
-                            onChanged: (v) => ref
-                                .read(settingsControllerProvider.notifier)
-                                .setBeltLevel(v),
-                          ),
-                        ],
-                      ]),
+                      ),
                       const SizedBox(height: 16),
 
-                      // ── Dojo section ──────────────────────────────────
-                      _SectionLabel('nav.dojo'.tr()),
-                      const SizedBox(height: 8),
+                      // ── Dojo ──────────────────────────────────────────
                       if (authState.role == 'student')
                         _DojoStudentSection(authState: authState)
                       else if (authState.role == 'instructor')
                         _DojoInstructorSection(authState: authState),
                       const SizedBox(height: 16),
 
-                      // ── About section ─────────────────────────────────
-                      _SectionLabel('About'),
-                      const SizedBox(height: 8),
-                      _SectionCard(children: [
-                        _SettingsRow(
-                          icon: Icons.gavel_rounded,
-                          iconColor: AppColors.primary,
-                          title: 'settings.termsPrivacy'.tr(),
-                          subtitle: 'settings.termsPrivacySubtitle'.tr(),
-                          onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Coming soon')),
-                          ),
-                        ),
-                        _Divider(),
-                        _SettingsRow(
-                          icon: Icons.support_agent_rounded,
-                          iconColor: AppColors.info,
-                          title: 'settings.support'.tr(),
-                          subtitle: 'settings.supportSubtitle'.tr(),
-                          onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Coming soon')),
-                          ),
-                        ),
-                      ]),
-                      const SizedBox(height: 8),
-                      Center(
-                        child: Text(
-                          'TulMaster v1.0.0 · ITF Edition',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppColors.textDisabled,
+                      // ── About ─────────────────────────────────────────
+                      TulCard(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
+                              child: Text('About',
+                                  style: TulTextStyles.cardHeader(color: palette.text)),
+                            ),
+                            ListRow(
+                              icon: LucideIcons.info,
+                              iconColor: ListRowColor.primary,
+                              title: 'settings.termsPrivacy'.tr(),
+                              sub: 'settings.termsPrivacySubtitle'.tr(),
+                              onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Coming soon')),
                               ),
+                            ),
+                            ListRow(
+                              icon: LucideIcons.info,
+                              iconColor: ListRowColor.secondary,
+                              title: 'settings.support'.tr(),
+                              sub: 'settings.supportSubtitle'.tr(),
+                              onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Coming soon')),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(4, 8, 4, 2),
+                              child: Text(
+                                'TulMaster v1.0.0 · ITF Edition',
+                                style:
+                                    TulTextStyles.mono(size: 11, color: palette.text3),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 24),
 
                       // ── Logout ────────────────────────────────────────
-                      Container(
-                        width: double.infinity,
-                        height: 52,
-                        decoration: BoxDecoration(
-                          gradient: AppColors.gradMain,
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          borderRadius: BorderRadius.circular(14),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(14),
-                            onTap: () async {
-                              await ref
-                                  .read(authControllerProvider.notifier)
-                                  .logout();
-                            },
-                            child: Center(
-                              child: Text(
-                                'settings.logout'.tr(),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
+                      TulDestructiveButton(
+                        label: 'settings.logout'.tr(),
+                        onPressed: () async {
+                          await ref
+                              .read(authControllerProvider.notifier)
+                              .logout();
+                        },
                       ),
                       const SizedBox(height: kAppShellContentBottomInset),
                     ],
@@ -186,6 +224,35 @@ class SettingsScreen extends ConsumerWidget {
       ),
     );
   }
+
+  Widget _valueTrailing(BuildContext context, String value) {
+    final palette = context.tul;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(value, style: TulTextStyles.small(color: palette.text3)),
+        const SizedBox(width: 4),
+        Icon(LucideIcons.chevronRight, size: 16, color: palette.text3),
+      ],
+    );
+  }
+
+  String _themeLabel(ThemeMode m) => switch (m) {
+        ThemeMode.dark => 'settings.themeDark'.tr(),
+        ThemeMode.light => 'settings.themeLight'.tr(),
+        ThemeMode.system => 'settings.themeSystem'.tr(),
+      };
+
+  static const _langs = [
+    ('ko', '한국어'),
+    ('en', 'English'),
+    ('es', 'Español'),
+    ('ja', '日本語'),
+    ('zh', '中文'),
+  ];
+
+  String _langLabel(String code) =>
+      _langs.firstWhere((l) => l.$1 == code, orElse: () => ('', code)).$2;
 }
 
 // ── Profile card ──────────────────────────────────────────────────────────────
@@ -240,14 +307,10 @@ class _ProfileCardState extends ConsumerState<_ProfileCard> {
     final auth = ref.watch(authControllerProvider);
     final isInstructor = auth.isInstructor;
     final beltLevel = widget.settings.beltLevel as BeltLevel;
+    final palette = context.tul;
 
-    return Container(
+    return TulCard(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
-      ),
       child: Column(
         children: [
           Row(
@@ -256,17 +319,14 @@ class _ProfileCardState extends ConsumerState<_ProfileCard> {
               GestureDetector(
                 onTap: _uploadingPhoto ? null : _pickAndUploadPhoto,
                 child: Stack(
+                  clipBehavior: Clip.none,
                   children: [
                     Container(
-                      width: 64,
-                      height: 64,
-                      decoration: BoxDecoration(
-                        gradient: AppColors.gradSoft,
+                      width: 66,
+                      height: 66,
+                      decoration: const BoxDecoration(
+                        gradient: TulGradients.brand,
                         shape: BoxShape.circle,
-                        border: Border.all(
-                          color: AppColors.primary.withValues(alpha: 0.3),
-                          width: 1.5,
-                        ),
                       ),
                       child: ClipOval(
                         child: auth.avatarUrl.isNotEmpty
@@ -277,41 +337,40 @@ class _ProfileCardState extends ConsumerState<_ProfileCard> {
                                 placeholder: (_, __) => const SizedBox.shrink(),
                                 errorWidget: (_, __, ___) => Icon(
                                   isInstructor
-                                      ? Icons.shield_outlined
-                                      : Icons.person_outline_rounded,
-                                  color: AppColors.primary,
-                                  size: 30,
+                                      ? LucideIcons.shield
+                                      : LucideIcons.user,
+                                  color: Colors.white,
+                                  size: 28,
                                 ),
                               )
                             : Icon(
                                 isInstructor
-                                    ? Icons.shield_outlined
-                                    : Icons.person_outline_rounded,
-                                color: AppColors.primary,
-                                size: 30,
+                                    ? LucideIcons.shield
+                                    : LucideIcons.user,
+                                color: Colors.white,
+                                size: 28,
                               ),
                       ),
                     ),
                     Positioned(
-                      right: 0,
-                      bottom: 0,
+                      right: -2,
+                      bottom: -2,
                       child: Container(
-                        width: 20,
-                        height: 20,
+                        width: 24,
+                        height: 24,
+                        alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: AppColors.primary,
+                          gradient: TulGradients.brand,
                           shape: BoxShape.circle,
-                          border: Border.all(color: AppColors.surface, width: 1.5),
+                          border: Border.all(color: palette.stage, width: 2),
                         ),
                         child: _uploadingPhoto
                             ? const Padding(
                                 padding: EdgeInsets.all(3),
                                 child: CircularProgressIndicator(
-                                  strokeWidth: 1.5,
-                                  color: Colors.white,
-                                ),
+                                  strokeWidth: 1.5, color: Colors.white),
                               )
-                            : const Icon(Icons.camera_alt_rounded,
+                            : const Icon(LucideIcons.camera,
                                 size: 11, color: Colors.white),
                       ),
                     ),
@@ -328,40 +387,40 @@ class _ProfileCardState extends ConsumerState<_ProfileCard> {
                       TextField(
                         controller: _nameCtrl,
                         autofocus: true,
-                        style: Theme.of(context).textTheme.titleMedium,
+                        style: TulTextStyles.cardHeader(color: palette.text)
+                            .copyWith(fontSize: 17),
                         decoration: const InputDecoration(
                           isDense: true,
-                          contentPadding: EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 8),
+                          contentPadding:
+                              EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                         ),
                       )
                     else
                       Text(
                         auth.displayName.isEmpty ? '—' : auth.displayName,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w700),
+                        style: TulTextStyles.cardHeader(color: palette.text)
+                            .copyWith(fontSize: 17),
                       ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 8),
                     Wrap(
                       spacing: 6,
+                      runSpacing: 4,
                       children: [
-                        _Badge(
+                        TulBadge(
                           label: isInstructor
                               ? 'auth.roleInstructor'.tr()
                               : 'auth.roleStudent'.tr(),
-                          color: AppColors.primary,
+                          color: TulBadgeColor.red,
                         ),
                         if (!isInstructor)
-                          _Badge(
+                          TulBadge(
                             label: beltLevel.i18nKey.tr(),
-                            color: AppColors.secondary,
+                            color: TulBadgeColor.blue,
                           ),
                         if (isInstructor && auth.danRank.isNotEmpty)
-                          _Badge(
+                          TulBadge(
                             label: auth.danRank,
-                            color: AppColors.accent,
+                            color: TulBadgeColor.blue,
                           ),
                       ],
                     ),
@@ -370,34 +429,27 @@ class _ProfileCardState extends ConsumerState<_ProfileCard> {
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
           if (_editing)
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.textSecondary,
-                      side: const BorderSide(color: AppColors.border),
-                      padding: const EdgeInsets.symmetric(vertical: 11),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                    ),
+                  child: TulSecondaryButton(
+                    label: 'journal.cancel'.tr(),
                     onPressed: () {
                       _nameCtrl.text = auth.displayName;
                       setState(() => _editing = false);
                     },
-                    child: Text('journal.cancel'.tr()),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: FilledButton(
                     style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      padding: const EdgeInsets.symmetric(vertical: 11),
+                      backgroundColor: palette.primary,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
+                          borderRadius: TulRadius.brLg),
                     ),
                     onPressed: _nameCtrl.text.trim().isEmpty
                         ? null
@@ -420,20 +472,9 @@ class _ProfileCardState extends ConsumerState<_ProfileCard> {
               ],
             )
           else
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.textSecondary,
-                  side: const BorderSide(color: AppColors.border),
-                  padding: const EdgeInsets.symmetric(vertical: 11),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                ),
-                onPressed: () => setState(() => _editing = true),
-                child: Text('settings.editProfile'.tr(),
-                    style: const TextStyle(fontWeight: FontWeight.w500)),
-              ),
+            TulSecondaryButton(
+              label: 'settings.editProfile'.tr(),
+              onPressed: () => setState(() => _editing = true),
             ),
         ],
       ),
@@ -441,207 +482,54 @@ class _ProfileCardState extends ConsumerState<_ProfileCard> {
   }
 }
 
-class _Badge extends StatelessWidget {
-  const _Badge({required this.label, required this.color});
+// ── Picker sheet base ─────────────────────────────────────────────────────────
 
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: color,
-              fontWeight: FontWeight.w600,
-            ),
-      ),
-    );
-  }
-}
-
-// ── Section helpers ───────────────────────────────────────────────────────────
-
-class _SectionLabel extends StatelessWidget {
-  const _SectionLabel(this.title);
+class _PickerShell extends StatelessWidget {
+  const _PickerShell({required this.title, required this.child});
 
   final String title;
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      title,
-      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: AppColors.textDisabled,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.5,
+    final palette = context.tul;
+    return Container(
+      decoration: BoxDecoration(
+        color: palette.card,
+        borderRadius: const BorderRadius.vertical(top: TulRadius.rXl4),
+        border: Border.all(color: palette.border),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: palette.borderStrong,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Text(title, style: TulTextStyles.h2(color: palette.text)),
+              const SizedBox(height: 12),
+              child,
+            ],
           ),
-    );
-  }
-}
-
-class _SectionCard extends StatelessWidget {
-  const _SectionCard({required this.children});
-
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(children: children),
-    );
-  }
-}
-
-class _Divider extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return const Divider(
-        height: 1, indent: 52, endIndent: 16, color: AppColors.border);
-  }
-}
-
-class _SettingsRow extends StatelessWidget {
-  const _SettingsRow({
-    required this.icon,
-    required this.iconColor,
-    required this.title,
-    this.subtitle,
-    this.trailing,
-    this.onTap,
-  });
-
-  final IconData icon;
-  final Color iconColor;
-  final String title;
-  final String? subtitle;
-  final Widget? trailing;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
-          children: [
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: iconColor.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(icon, color: iconColor, size: 17),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.w500,
-                          )),
-                  if (subtitle != null)
-                    Text(subtitle!,
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(color: AppColors.textSecondary)),
-                ],
-              ),
-            ),
-            trailing ??
-                const Icon(Icons.chevron_right_rounded,
-                    color: AppColors.textDisabled, size: 20),
-          ],
         ),
       ),
     );
   }
 }
 
-// ── Theme row ─────────────────────────────────────────────────────────────────
-
-class _ThemeRow extends StatelessWidget {
-  const _ThemeRow({required this.current, required this.onChanged});
-
-  final ThemeMode current;
-  final void Function(ThemeMode) onChanged;
-
-  String _label(ThemeMode m, BuildContext context) => switch (m) {
-        ThemeMode.dark => 'settings.themeDark'.tr(),
-        ThemeMode.light => 'settings.themeLight'.tr(),
-        ThemeMode.system => 'settings.themeSystem'.tr(),
-      };
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(16),
-      onTap: () => showModalBottomSheet<void>(
-        context: context,
-        builder: (ctx) => _ThemePicker(current: current, onChanged: onChanged),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
-          children: [
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: AppColors.secondary.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.dark_mode_outlined,
-                  color: AppColors.secondary, size: 17),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('settings.theme'.tr(),
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyLarge
-                          ?.copyWith(fontWeight: FontWeight.w500)),
-                  Text('settings.themeSubtitle'.tr(),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.textSecondary,
-                          )),
-                ],
-              ),
-            ),
-            Text(_label(current, context),
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                    )),
-            const SizedBox(width: 4),
-            const Icon(Icons.chevron_right_rounded,
-                color: AppColors.textDisabled, size: 20),
-          ],
-        ),
-      ),
-    );
-  }
-}
+// ── Theme picker ──────────────────────────────────────────────────────────────
 
 class _ThemePicker extends StatelessWidget {
   const _ThemePicker({required this.current, required this.onChanged});
@@ -651,42 +539,24 @@ class _ThemePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 36,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: AppColors.border,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
+    return _PickerShell(
+      title: 'settings.theme'.tr(),
+      child: Column(
+        children: [
+          for (final mode in ThemeMode.values)
+            RadioListTile<ThemeMode>(
+              value: mode,
+              groupValue: current,
+              title: Text(_label(mode)),
+              activeColor: context.tul.primary,
+              onChanged: (v) {
+                if (v != null) {
+                  onChanged(v);
+                  Navigator.pop(context);
+                }
+              },
             ),
-            Text('settings.theme'.tr(),
-                style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 12),
-            for (final mode in ThemeMode.values)
-              RadioListTile<ThemeMode>(
-                value: mode,
-                groupValue: current,
-                title: Text(_label(mode)),
-                activeColor: AppColors.primary,
-                onChanged: (v) {
-                  if (v != null) {
-                    onChanged(v);
-                    Navigator.pop(context);
-                  }
-                },
-              ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -698,78 +568,7 @@ class _ThemePicker extends StatelessWidget {
       };
 }
 
-// ── Language row ──────────────────────────────────────────────────────────────
-
-class _LanguageRow extends StatelessWidget {
-  const _LanguageRow({required this.current, required this.onChanged});
-
-  final String current;
-  final void Function(String) onChanged;
-
-  static const _langs = [
-    ('ko', '한국어'),
-    ('en', 'English'),
-    ('es', 'Español'),
-    ('ja', '日本語'),
-    ('zh', '中文'),
-  ];
-
-  String get _currentLabel =>
-      _langs.firstWhere((l) => l.$1 == current, orElse: () => ('', current)).$2;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(16),
-      onTap: () => showModalBottomSheet<void>(
-        context: context,
-        builder: (ctx) =>
-            _LanguagePicker(current: current, onChanged: onChanged),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
-          children: [
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: AppColors.accent.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.language_rounded,
-                  color: AppColors.accent, size: 17),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('settings.language'.tr(),
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyLarge
-                          ?.copyWith(fontWeight: FontWeight.w500)),
-                  Text('settings.languageSubtitle'.tr(),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.textSecondary,
-                          )),
-                ],
-              ),
-            ),
-            Text(_currentLabel,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                    )),
-            const SizedBox(width: 4),
-            const Icon(Icons.chevron_right_rounded,
-                color: AppColors.textDisabled, size: 20),
-          ],
-        ),
-      ),
-    );
-  }
-}
+// ── Language picker ───────────────────────────────────────────────────────────
 
 class _LanguagePicker extends StatelessWidget {
   const _LanguagePicker({required this.current, required this.onChanged});
@@ -787,98 +586,30 @@ class _LanguagePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 36,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: AppColors.border,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
+    return _PickerShell(
+      title: 'settings.language'.tr(),
+      child: Column(
+        children: [
+          for (final lang in _langs)
+            RadioListTile<String>(
+              value: lang.$1,
+              groupValue: current,
+              title: Text(lang.$2),
+              activeColor: context.tul.primary,
+              onChanged: (v) {
+                if (v != null) {
+                  onChanged(v);
+                  Navigator.pop(context);
+                }
+              },
             ),
-            Text('settings.language'.tr(),
-                style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 12),
-            for (final lang in _langs)
-              RadioListTile<String>(
-                value: lang.$1,
-                groupValue: current,
-                title: Text(lang.$2),
-                activeColor: AppColors.primary,
-                onChanged: (v) {
-                  if (v != null) {
-                    onChanged(v);
-                    Navigator.pop(context);
-                  }
-                },
-              ),
-          ],
-        ),
+        ],
       ),
     );
   }
 }
 
-// ── Belt row ──────────────────────────────────────────────────────────────────
-
-class _BeltRow extends StatelessWidget {
-  const _BeltRow({required this.current, required this.onChanged});
-
-  final BeltLevel current;
-  final void Function(BeltLevel) onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(16),
-      onTap: () => showModalBottomSheet<void>(
-        context: context,
-        builder: (ctx) => _BeltPicker(current: current, onChanged: onChanged),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
-          children: [
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: AppColors.warning.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.military_tech_outlined,
-                  color: AppColors.warning, size: 17),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text('settings.beltLevel'.tr(),
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyLarge
-                      ?.copyWith(fontWeight: FontWeight.w500)),
-            ),
-            Text(current.i18nKey.tr(),
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                    )),
-            const SizedBox(width: 4),
-            const Icon(Icons.chevron_right_rounded,
-                color: AppColors.textDisabled, size: 20),
-          ],
-        ),
-      ),
-    );
-  }
-}
+// ── Belt picker ───────────────────────────────────────────────────────────────
 
 class _BeltPicker extends StatelessWidget {
   const _BeltPicker({required this.current, required this.onChanged});
@@ -888,42 +619,24 @@ class _BeltPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 36,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: AppColors.border,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
+    return _PickerShell(
+      title: 'settings.beltLevel'.tr(),
+      child: Column(
+        children: [
+          for (final belt in BeltLevel.values)
+            RadioListTile<BeltLevel>(
+              value: belt,
+              groupValue: current,
+              title: Text(belt.i18nKey.tr()),
+              activeColor: context.tul.primary,
+              onChanged: (v) {
+                if (v != null) {
+                  onChanged(v);
+                  Navigator.pop(context);
+                }
+              },
             ),
-            Text('settings.beltLevel'.tr(),
-                style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 12),
-            for (final belt in BeltLevel.values)
-              RadioListTile<BeltLevel>(
-                value: belt,
-                groupValue: current,
-                title: Text(belt.i18nKey.tr()),
-                activeColor: AppColors.primary,
-                onChanged: (v) {
-                  if (v != null) {
-                    onChanged(v);
-                    Navigator.pop(context);
-                  }
-                },
-              ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -989,8 +702,11 @@ class _ChangePasswordDialogState
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     return AlertDialog(
-      title: Text('settings.changePassword'.tr()),
+      backgroundColor: palette.card,
+      title: Text('settings.changePassword'.tr(),
+          style: TulTextStyles.h2(color: palette.text)),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1021,8 +737,7 @@ class _ChangePasswordDialogState
             ),
             if (_error != null) ...[
               const SizedBox(height: 8),
-              Text(_error!,
-                  style: const TextStyle(color: AppColors.primary)),
+              Text(_error!, style: TextStyle(color: palette.primary)),
             ],
           ],
         ),
@@ -1129,13 +844,14 @@ class _DojoStudentSectionState extends ConsumerState<_DojoStudentSection> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
+    final palette = context.tul;
 
     if (authState.dojoConnected) {
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          gradient: AppColors.gradMain,
-          borderRadius: BorderRadius.circular(16),
+          gradient: TulGradients.brand,
+          borderRadius: TulRadius.brXl3,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1149,8 +865,8 @@ class _DojoStudentSectionState extends ConsumerState<_DojoStudentSection> {
                     color: Colors.white.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.home_rounded,
-                      color: Colors.white, size: 22),
+                  child: const Icon(LucideIcons.school,
+                      color: Colors.white, size: 20),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -1161,38 +877,27 @@ class _DojoStudentSectionState extends ConsumerState<_DojoStudentSection> {
                         authState.dojoName.isNotEmpty
                             ? authState.dojoName
                             : 'nav.dojo'.tr(),
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleSmall
-                            ?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white),
+                        style: TulTextStyles.bodyStrong(color: Colors.white),
                       ),
                       if (authState.instructorName.isNotEmpty)
                         Text(
                           authState.instructorName,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(
-                                  color: Colors.white.withValues(alpha: 0.75)),
+                          style: TulTextStyles.small(
+                              color: Colors.white.withValues(alpha: 0.75)),
                         ),
                     ],
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: AppColors.success,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     'Active Member',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
+                    style: TulTextStyles.mono(size: 11, color: Colors.white),
                   ),
                 ),
               ],
@@ -1201,10 +906,11 @@ class _DojoStudentSectionState extends ConsumerState<_DojoStudentSection> {
             OutlinedButton.icon(
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.white,
-                side: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
+                side: BorderSide(
+                    color: Colors.white.withValues(alpha: 0.5)),
               ),
               onPressed: _isSaving ? null : _disconnect,
-              icon: const Icon(Icons.link_off_rounded, size: 16),
+              icon: const Icon(LucideIcons.link, size: 16),
               label: Text('settings.leaveDojoTitle'.tr()),
             ),
           ],
@@ -1212,22 +918,14 @@ class _DojoStudentSectionState extends ConsumerState<_DojoStudentSection> {
       );
     }
 
-    return Container(
+    return TulCard(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'settings.connectDojoPrompt'.tr(),
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(color: AppColors.textSecondary),
+            style: TulTextStyles.small(color: palette.text2),
           ),
           const SizedBox(height: 12),
           Row(
@@ -1242,7 +940,7 @@ class _DojoStudentSectionState extends ConsumerState<_DojoStudentSection> {
                     hintText: 'HANB1',
                     counterText: '',
                     prefixIcon:
-                        const Icon(Icons.qr_code_outlined, size: 18),
+                        const Icon(LucideIcons.qrCode, size: 18),
                   ),
                   onChanged: (_) => setState(() => _error = null),
                 ),
@@ -1264,8 +962,7 @@ class _DojoStudentSectionState extends ConsumerState<_DojoStudentSection> {
           if (_error != null) ...[
             const SizedBox(height: 6),
             Text(_error!,
-                style: const TextStyle(
-                    color: AppColors.primary, fontSize: 12)),
+                style: TulTextStyles.small(color: palette.primary)),
           ],
         ],
       ),
@@ -1282,6 +979,7 @@ class _DojoInstructorSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     String planLabel;
     switch (authState.dojoPlan) {
       case 'paid_a':
@@ -1290,24 +988,19 @@ class _DojoInstructorSection extends StatelessWidget {
         planLabel = 'dojo.planFree'.tr();
     }
 
-    return Container(
+    return TulCard(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-      ),
       child: Row(
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
-              gradient: AppColors.gradSoft,
-              borderRadius: BorderRadius.circular(10),
+              gradient: TulGradients.brand,
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.home_outlined,
-                color: AppColors.primary, size: 20),
+            child: const Icon(LucideIcons.school,
+                color: Colors.white, size: 20),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -1316,13 +1009,11 @@ class _DojoInstructorSection extends StatelessWidget {
               children: [
                 Text(
                   authState.dojoName as String? ?? '',
-                  style: Theme.of(context).textTheme.titleSmall,
+                  style: TulTextStyles.bodyStrong(color: palette.text),
                 ),
                 Text(
                   planLabel,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
+                  style: TulTextStyles.small(color: palette.text3),
                 ),
               ],
             ),

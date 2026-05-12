@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/network/backend_client.dart';
@@ -131,7 +132,15 @@ class _StudentStats extends ConsumerWidget {
     final sessions = state.sessions;
 
     return Scaffold(
-      appBar: AppBar(title: GradHeaderText('nav.stats'.tr(), fontSize: 20)),
+      appBar: AppBar(
+        title: GradHeaderText('nav.stats'.tr(), fontSize: 20),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => context.push('/settings'),
+          ),
+        ],
+      ),
       body: state.isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
@@ -214,7 +223,15 @@ class _InstructorStatsState extends ConsumerState<_InstructorStats> {
     final hwAsync = ref.watch(_homeworkStatsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: GradHeaderText('stats.dojoTitle'.tr(), fontSize: 20)),
+      appBar: AppBar(
+        title: GradHeaderText('stats.dojoTitle'.tr(), fontSize: 20),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => context.push('/settings'),
+          ),
+        ],
+      ),
       body: Column(
         children: [
           _PeriodSelector(
