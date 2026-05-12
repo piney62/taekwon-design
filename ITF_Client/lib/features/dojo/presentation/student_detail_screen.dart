@@ -4,7 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/backend_client.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/tul_gradients.dart';
+import '../../../core/theme/tul_text_styles.dart';
 import '../../../shared/widgets/app_shell.dart';
+import '../../../shared/widgets/badge.dart';
+import '../../../shared/widgets/tul_buttons.dart';
+import '../../../shared/widgets/tul_card.dart';
 import '../application/dojo_providers.dart';
 
 // ignore_for_file: avoid_dynamic_calls
@@ -190,60 +195,49 @@ class _StudentHeader extends StatelessWidget {
           '${dt.year}.${dt.month.toString().padLeft(2, '0')}.${dt.day.toString().padLeft(2, '0')}';
     } catch (_) {}
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 24,
-            backgroundColor: AppColors.itfRed,
-            child: Text(
-              (detail['display_name'] as String? ?? '?')[0].toUpperCase(),
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  detail['display_name'] as String? ?? '',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                Text(
-                  'dojo.connectedBelt'.tr(namedArgs: {'belt': beltLabel, 'date': connectedStr}),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                ),
-              ],
-            ),
-          ),
-          if (pendingCount > 0)
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      child: TulCard(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          children: [
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              width: 52,
+              height: 52,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: AppColors.warning.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(8),
+                gradient: TulGradients.brandSoft,
+                borderRadius: BorderRadius.circular(15),
               ),
               child: Text(
-                'dojo.pendingHwBadge'.tr(namedArgs: {'count': pendingCount.toString()}),
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: AppColors.warning,
-                      fontWeight: FontWeight.bold,
-                    ),
+                (detail['display_name'] as String? ?? '?')[0].toUpperCase(),
+                style: TulTextStyles.h2(color: Colors.white),
               ),
             ),
-        ],
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    detail['display_name'] as String? ?? '',
+                    style: TulTextStyles.bodyStrong(color: AppColors.text),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'dojo.connectedBelt'.tr(namedArgs: {'belt': beltLabel, 'date': connectedStr}),
+                    style: TulTextStyles.small(color: AppColors.textSecondary),
+                  ),
+                ],
+              ),
+            ),
+            if (pendingCount > 0)
+              TulBadge(
+                label: 'dojo.pendingHwBadge'.tr(namedArgs: {'count': pendingCount.toString()}),
+                color: TulBadgeColor.yellow,
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -294,14 +288,11 @@ class _CommentsTab extends StatelessWidget {
                         dateStr =
                             '${dt.month}/${dt.day} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
                       } catch (_) {}
-                      return Container(
+                      return TulCard(
+                        background: AppColors.info.withValues(alpha: 0.08),
+                        borderColor: AppColors.info.withValues(alpha: 0.2),
                         padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: AppColors.info.withValues(alpha: 0.08),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                              color: AppColors.info.withValues(alpha: 0.2)),
-                        ),
+                        borderRadius: BorderRadius.circular(10),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -413,28 +404,26 @@ class _JournalTab extends StatelessWidget {
           children: [
             // ── 승급 준비 ───────────────────────────────────────────────
             Text('dojo.readinessTitle'.tr(),
-                style: Theme.of(context).textTheme.titleSmall),
+                style: TulTextStyles.cardHeader(color: AppColors.text)),
             const SizedBox(height: 8),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Column(
-                  children: [
-                    _ReadinessRow(
-                      label: 'dojo.sparring'.tr(),
-                      checked: readiness['sparring_check'] as bool? ?? false,
-                    ),
-                    _ReadinessRow(
-                      label: 'dojo.breaking'.tr(),
-                      checked: readiness['breaking_check'] as bool? ?? false,
-                    ),
-                    _ReadinessRow(
-                      label: 'dojo.theoryTest'.tr(),
-                      checked:
-                          readiness['theory_test_passed'] as bool? ?? false,
-                    ),
-                  ],
-                ),
+            TulCard(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Column(
+                children: [
+                  _ReadinessRow(
+                    label: 'dojo.sparring'.tr(),
+                    checked: readiness['sparring_check'] as bool? ?? false,
+                  ),
+                  _ReadinessRow(
+                    label: 'dojo.breaking'.tr(),
+                    checked: readiness['breaking_check'] as bool? ?? false,
+                  ),
+                  _ReadinessRow(
+                    label: 'dojo.theoryTest'.tr(),
+                    checked:
+                        readiness['theory_test_passed'] as bool? ?? false,
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 16),
@@ -442,30 +431,23 @@ class _JournalTab extends StatelessWidget {
             // ── 약점 패턴 ───────────────────────────────────────────────
             if (weaknesses.isNotEmpty) ...[
               Text('dojo.weaknessFmt'.tr(namedArgs: {'count': weaknesses.length.toString()}),
-                  style: Theme.of(context).textTheme.titleSmall),
+                  style: TulTextStyles.cardHeader(color: AppColors.text)),
               const SizedBox(height: 8),
-              ...weaknesses.map((w) => Card(
-                    margin: const EdgeInsets.only(bottom: 6),
-                    child: ListTile(
-                      dense: true,
-                      leading: const Icon(Icons.warning_amber_outlined,
-                          color: AppColors.warning, size: 20),
-                      title: Text(w['movement_name'] as String? ?? ''),
-                      trailing: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppColors.warning.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          '${w['consecutive_count']}${'stats.sessionsSuffix'.tr()}',
-                          style:
-                              Theme.of(context).textTheme.labelSmall?.copyWith(
-                                    color: AppColors.warning,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                        ),
+              ...weaknesses.map((w) => Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: TulCard(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.warning_amber_outlined,
+                              color: AppColors.warning, size: 20),
+                          const SizedBox(width: 10),
+                          Expanded(child: Text(w['movement_name'] as String? ?? '')),
+                          TulBadge(
+                            label: '${w['consecutive_count']}${'stats.sessionsSuffix'.tr()}',
+                            color: TulBadgeColor.yellow,
+                          ),
+                        ],
                       ),
                     ),
                   )),
@@ -474,7 +456,7 @@ class _JournalTab extends StatelessWidget {
 
             // ── 최근 훈련 기록 ──────────────────────────────────────────
             Text('dojo.recentSessionsTitle'.tr(),
-                style: Theme.of(context).textTheme.titleSmall),
+                style: TulTextStyles.cardHeader(color: AppColors.text)),
             const SizedBox(height: 8),
             if (sessions.isEmpty)
               Center(
@@ -491,9 +473,9 @@ class _JournalTab extends StatelessWidget {
                 final type = s['training_type'] as String? ?? '';
                 final mins = s['duration_minutes'] as int? ?? 0;
                 final notes = s['notes'] as String? ?? '';
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  child: Padding(
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: TulCard(
                     padding: const EdgeInsets.all(12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -502,22 +484,13 @@ class _JournalTab extends StatelessWidget {
                           children: [
                             Text(
                               dateStr,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelMedium
-                                  ?.copyWith(
-                                      color: AppColors.textSecondary),
+                              style: TulTextStyles.small(color: AppColors.textSecondary),
                             ),
                             const Spacer(),
-                            Text(type,
-                                style: Theme.of(context).textTheme.labelMedium),
+                            Text(type, style: TulTextStyles.smallStrong(color: AppColors.text)),
                             const SizedBox(width: 8),
                             Text('$mins${'journal.min'.tr()}',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .labelSmall
-                                    ?.copyWith(
-                                        color: AppColors.textSecondary)),
+                                style: TulTextStyles.small(color: AppColors.textSecondary)),
                             const SizedBox(width: 8),
                             Row(
                               mainAxisSize: MainAxisSize.min,
@@ -534,8 +507,7 @@ class _JournalTab extends StatelessWidget {
                         ),
                         if (notes.isNotEmpty) ...[
                           const SizedBox(height: 6),
-                          Text(notes,
-                              style: Theme.of(context).textTheme.bodySmall),
+                          Text(notes, style: TulTextStyles.small(color: AppColors.textSecondary)),
                         ],
                       ],
                     ),
@@ -604,7 +576,7 @@ class _HomeworkTab extends StatelessWidget {
         // ── 현재 숙제 목록 ─────────────────────────────────────────────
         if (pendingList.isNotEmpty) ...[
           Text('dojo.pendingHwFmt'.tr(namedArgs: {'count': pendingList.length.toString()}),
-              style: Theme.of(context).textTheme.titleSmall),
+              style: TulTextStyles.cardHeader(color: AppColors.text)),
           const SizedBox(height: 8),
           ...pendingList.map((hw) {
             final dueStr = hw['due_date'] as String? ?? '';
@@ -613,17 +585,32 @@ class _HomeworkTab extends StatelessWidget {
               final dt = DateTime.parse(dueStr);
               dueFmt = 'dojo.dueDateFmt'.tr(namedArgs: {'month': dt.month.toString(), 'day': dt.day.toString()});
             } catch (_) {}
-            return Card(
-              margin: const EdgeInsets.only(bottom: 8),
-              child: ListTile(
-                leading: const Icon(Icons.assignment_outlined,
-                    color: AppColors.info),
-                title: Text(hw['content'] as String? ?? ''),
-                subtitle: Text(dueFmt,
-                    style: const TextStyle(color: AppColors.textSecondary)),
-                trailing: TextButton(
-                  onPressed: () => onComplete(hw['id'] as int),
-                  child: Text('dojo.complete'.tr()),
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: TulCard(
+                padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
+                child: Row(
+                  children: [
+                    const Icon(Icons.assignment_outlined, color: AppColors.info),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(hw['content'] as String? ?? '', style: TulTextStyles.bodyStrong(color: AppColors.text)),
+                          if (dueFmt.isNotEmpty) ...[
+                            const SizedBox(height: 2),
+                            Text(dueFmt, style: TulTextStyles.small(color: AppColors.textSecondary)),
+                          ],
+                        ],
+                      ),
+                    ),
+                    TulGhostButton(
+                      label: 'dojo.complete'.tr(),
+                      onPressed: () => onComplete(hw['id'] as int),
+                      color: AppColors.primary,
+                    ),
+                  ],
                 ),
               ),
             );
@@ -634,7 +621,7 @@ class _HomeworkTab extends StatelessWidget {
         // ── 완료된 숙제 이력 ───────────────────────────────────────────
         if (completedList.isNotEmpty) ...[
           Text('dojo.completedHwFmt'.tr(namedArgs: {'count': completedList.length.toString()}),
-              style: Theme.of(context).textTheme.titleSmall),
+              style: TulTextStyles.cardHeader(color: AppColors.text)),
           const SizedBox(height: 8),
           ...completedList.map((hw) {
             final completedAt = hw['completed_at'] as String?;
@@ -652,21 +639,33 @@ class _HomeworkTab extends StatelessWidget {
               }
             } catch (_) {}
             final byLabel = completedBy == 'student' ? 'dojo.completedByStudent'.tr() : 'dojo.completedByInstructor'.tr();
-            return Card(
-              margin: const EdgeInsets.only(bottom: 8),
-              child: ListTile(
-                leading: const Icon(Icons.check_circle_outline,
-                    color: AppColors.success),
-                title: Text(
-                  hw['content'] as String? ?? '',
-                  style: const TextStyle(
-                      decoration: TextDecoration.lineThrough,
-                      color: AppColors.textSecondary),
-                ),
-                subtitle: Text(
-                  '$byLabel${timeFmt.isNotEmpty ? ' · $timeFmt' : ''}',
-                  style: const TextStyle(
-                      fontSize: 11, color: AppColors.textSecondary),
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: TulCard(
+                padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+                child: Row(
+                  children: [
+                    const Icon(Icons.check_circle_outline, color: AppColors.success, size: 20),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            hw['content'] as String? ?? '',
+                            style: TulTextStyles.body(color: AppColors.textSecondary).copyWith(
+                              decoration: TextDecoration.lineThrough,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '$byLabel${timeFmt.isNotEmpty ? ' · $timeFmt' : ''}',
+                            style: TulTextStyles.small(color: AppColors.textSecondary),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             );
@@ -676,7 +675,7 @@ class _HomeworkTab extends StatelessWidget {
 
         // ── 새 숙제 지정 ───────────────────────────────────────────────
         Text('dojo.assignHomework'.tr(),
-            style: Theme.of(context).textTheme.titleSmall),
+            style: TulTextStyles.cardHeader(color: AppColors.text)),
         const SizedBox(height: 8),
         TextField(
           controller: homeworkCtrl,
@@ -699,19 +698,9 @@ class _HomeworkTab extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          child: FilledButton(
-            onPressed: (isAdding || pendingList.length >= 3) ? null : onAdd,
-            child: isAdding
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: Colors.white),
-                  )
-                : Text(pendingList.length >= 3 ? 'dojo.maxHomework'.tr() : 'dojo.assign'.tr()),
-          ),
+        TulPrimaryButton(
+          label: pendingList.length >= 3 ? 'dojo.maxHomework'.tr() : 'dojo.assign'.tr(),
+          onPressed: (isAdding || pendingList.length >= 3) ? null : onAdd,
         ),
       ],
     );

@@ -7,8 +7,12 @@ import 'package:share_plus/share_plus.dart' show Share;
 
 import '../../../core/network/backend_client.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/tul_gradients.dart';
+import '../../../core/theme/tul_text_styles.dart';
 import '../../../shared/widgets/app_shell.dart';
 import '../../../shared/widgets/grad_header_text.dart';
+import '../../../shared/widgets/tul_buttons.dart';
+import '../../../shared/widgets/tul_card.dart';
 import '../application/dojo_providers.dart';
 import 'student_detail_screen.dart';
 
@@ -91,76 +95,66 @@ class _InstructorDojoScreenState extends ConsumerState<InstructorDojoScreen> {
 
             // ── 전체 숙제 지정 ──────────────────────────────────────────
             Text('dojo.groupHomework'.tr(),
-                style: Theme.of(context).textTheme.titleMedium),
+                style: TulTextStyles.cardHeader(color: AppColors.text)),
             const SizedBox(height: 8),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'dojo.groupHwDesc'.tr(),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
+            TulCard(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'dojo.groupHwDesc'.tr(),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: _groupHwCtrl,
+                    maxLength: 200,
+                    maxLines: 2,
+                    minLines: 1,
+                    decoration: InputDecoration(
+                      hintText: 'dojo.homeworkHint'.tr(),
+                      border: const OutlineInputBorder(),
+                      isDense: true,
+                      counterText: '',
                     ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: _groupHwCtrl,
-                      maxLength: 200,
-                      maxLines: 2,
-                      minLines: 1,
-                      decoration: InputDecoration(
-                        hintText: 'dojo.homeworkHint'.tr(),
-                        border: const OutlineInputBorder(),
-                        isDense: true,
-                        counterText: '',
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: () async {
+                          final picked = await showDatePicker(
+                            context: context,
+                            initialDate:
+                                DateTime.now().add(const Duration(days: 3)),
+                            firstDate: DateTime.now(),
+                            lastDate: DateTime.now()
+                                .add(const Duration(days: 90)),
+                          );
+                          if (picked != null) {
+                            setState(() => _groupHwDue = picked);
+                          }
+                        },
+                        icon: const Icon(Icons.calendar_today_outlined,
+                            size: 16),
+                        label: Text(
+                          _groupHwDue != null
+                              ? 'dojo.dueDateSet'.tr(namedArgs: {'month': _groupHwDue!.month.toString(), 'day': _groupHwDue!.day.toString()})
+                              : 'dojo.selectDueDate'.tr(),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        OutlinedButton.icon(
-                          onPressed: () async {
-                            final picked = await showDatePicker(
-                              context: context,
-                              initialDate:
-                                  DateTime.now().add(const Duration(days: 3)),
-                              firstDate: DateTime.now(),
-                              lastDate: DateTime.now()
-                                  .add(const Duration(days: 90)),
-                            );
-                            if (picked != null) {
-                              setState(() => _groupHwDue = picked);
-                            }
-                          },
-                          icon: const Icon(Icons.calendar_today_outlined,
-                              size: 16),
-                          label: Text(
-                            _groupHwDue != null
-                                ? 'dojo.dueDateSet'.tr(namedArgs: {'month': _groupHwDue!.month.toString(), 'day': _groupHwDue!.day.toString()})
-                                : 'dojo.selectDueDate'.tr(),
-                          ),
-                        ),
-                        const Spacer(),
-                        FilledButton(
-                          onPressed: _isAssigningGroup
-                              ? null
-                              : _assignGroupHomework,
-                          child: _isAssigningGroup
-                              ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                      strokeWidth: 2, color: Colors.white),
-                                )
-                              : Text('dojo.assignAll'.tr()),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                      const Spacer(),
+                      TulPrimaryButton(
+                        label: 'dojo.assignAll'.tr(),
+                        onPressed: _isAssigningGroup ? null : _assignGroupHomework,
+                        expanded: false,
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 24),
@@ -168,7 +162,7 @@ class _InstructorDojoScreenState extends ConsumerState<InstructorDojoScreen> {
             // ── 학생 목록 ───────────────────────────────────────────────
             Text(
               'dojo.totalStudents'.tr(),
-              style: Theme.of(context).textTheme.titleMedium,
+              style: TulTextStyles.cardHeader(color: AppColors.text),
             ),
             const SizedBox(height: 8),
             membersAsync.when(
@@ -176,18 +170,16 @@ class _InstructorDojoScreenState extends ConsumerState<InstructorDojoScreen> {
                   const Center(child: CircularProgressIndicator()),
               error: (e, _) => Center(child: Text('${'common.error'.tr()}: $e')),
               data: (members) => members.isEmpty
-                  ? Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Center(
-                          child: Text(
-                            'dojo.noStudents'.tr(),
-                            textAlign: TextAlign.center,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.copyWith(color: AppColors.textSecondary),
-                          ),
+                  ? TulCard(
+                      padding: const EdgeInsets.all(24),
+                      child: Center(
+                        child: Text(
+                          'dojo.noStudents'.tr(),
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(color: AppColors.textSecondary),
                         ),
                       ),
                     )
@@ -266,12 +258,13 @@ class _InviteCodeSection extends ConsumerWidget {
           children: [
             Text(
               'dojo.myCodes'.tr(),
-              style: Theme.of(context).textTheme.titleMedium,
+              style: TulTextStyles.cardHeader(color: AppColors.text),
             ),
-            FilledButton.icon(
+            TulSecondaryButton(
+              label: 'dojo.inviteBtn'.tr(),
+              icon: Icons.add,
               onPressed: () => _generateCode(context, ref),
-              icon: const Icon(Icons.add, size: 18),
-              label: Text('dojo.inviteBtn'.tr()),
+              expanded: false,
             ),
           ],
         ),
@@ -349,9 +342,9 @@ class _InviteCodeCard extends StatelessWidget {
       });
     } catch (_) {}
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: Padding(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: TulCard(
         padding: const EdgeInsets.all(12),
         child: Row(
           children: [
@@ -484,26 +477,37 @@ class _StudentListCard extends StatelessWidget {
 
     final beltLabel = 'belt.$belt'.tr();
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: TulCard(
+        padding: const EdgeInsets.all(12),
         onTap: onTap,
-        leading: CircleAvatar(
-          backgroundColor: AppColors.itfRed,
-          child: Text(
-            name.isNotEmpty ? name[0].toUpperCase() : '?',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        title: Text(name),
-        subtitle: Text(beltLabel),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
+        child: Row(
           children: [
-            const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+            Container(
+              width: 44,
+              height: 44,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                gradient: TulGradients.brandSoft,
+                borderRadius: BorderRadius.circular(13),
+              ),
+              child: Text(
+                name.isNotEmpty ? name[0].toUpperCase() : '?',
+                style: TulTextStyles.bodyStrong(color: Colors.white),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(name, style: TulTextStyles.bodyStrong(color: AppColors.text)),
+                  const SizedBox(height: 2),
+                  Text(beltLabel, style: TulTextStyles.small(color: AppColors.textSecondary)),
+                ],
+              ),
+            ),
             PopupMenuButton<String>(
               onSelected: (v) {
                 if (v == 'disconnect') onDisconnect();
