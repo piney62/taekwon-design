@@ -10,6 +10,9 @@ desktop.ini
 *.iws
 # .vscode/   ← keep VS Code launch configs in repo
 
+# ── Tooling / agents ──────────────────────────────────────────
+.claude/
+
 # ── Flutter / Dart ────────────────────────────────────────────
 **/doc/api/
 **/ios/Flutter/.last_build_id

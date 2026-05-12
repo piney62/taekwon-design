@@ -1,0 +1,74 @@
+name: itf_coach
+description: "AI-based ITF Taekwondo training app"
+publish_to: 'none'
+
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # State management
+  flutter_riverpod: ^2.6.1
+
+  # Navigation
+  go_router: ^14.6.2
+
+  # AI / ML — pose detection (BlazePose / MediaPipe under the hood via ML Kit)
+  google_mlkit_pose_detection: ^0.14.0
+
+  # Camera & media
+  camera: ^0.11.0+2
+  image_picker: ^1.1.2
+  image: ^4.3.0
+
+  # Local storage
+  hive_ce: ^2.10.0
+  hive_ce_flutter: ^2.0.0
+  flutter_secure_storage: ^9.2.2
+  path_provider: ^2.1.5
+  shared_preferences: ^2.3.3
+
+  # i18n
+  easy_localization: ^3.0.7
+  intl: any
+
+  # Charts
+  fl_chart: ^0.70.0
+
+  # Networking
+  http: ^1.2.2
+  cached_network_image: ^3.4.1
+
+  # Video
+  video_player: ^2.9.2
+  chewie: ^1.8.5
+
+  # Dojo — invite code sharing & QR
+  share_plus: ^10.1.4
+  qr_flutter: ^4.1.0
+
+  # Fonts
+  google_fonts: ^6.2.1
+
+  # Utilities
+  collection: ^1.18.0
+  vector_math: ^2.1.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/i18n/
+    - assets/data/
