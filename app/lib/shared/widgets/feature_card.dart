@@ -66,11 +66,12 @@ class FeatureCard extends StatelessWidget {
               ),
             ),
             // Soft white glows (CSS::before / ::after equivalents). RadialGradient
-            // gives a true fading bloom; brighter now to balance the deeper base.
+            // gives a true fading bloom; the top-right gets a stronger pop to
+            // catch light against the blue end of the gradient.
             Positioned(
               top: -50,
               right: -50,
-              child: _Bloom(size: 220, intensity: 0.18),
+              child: _Bloom(size: 220, intensity: 0.24),
             ),
             Positioned(
               bottom: -40,

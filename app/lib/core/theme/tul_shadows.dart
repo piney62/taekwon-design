@@ -24,19 +24,22 @@ class TulShadows {
     ),
   ];
 
+  // Halo for the refined FeatureCard. Uses red-700 (the same hue as the
+  // card's gradient start) instead of the punchy primary red so the bloom
+  // around the card stays in the same "wine" family as the surface.
   static const featureDark = [
     BoxShadow(
-      color: Color(0x40EF4444),
+      color: Color(0x33B91C1C),
       blurRadius: 50,
-      offset: Offset(0, 20),
+      offset: Offset(0, 18),
     ),
   ];
 
   static const featureLight = [
     BoxShadow(
-      color: Color(0x33EF4444),
+      color: Color(0x26B91C1C),
       blurRadius: 50,
-      offset: Offset(0, 20),
+      offset: Offset(0, 18),
     ),
   ];
 
