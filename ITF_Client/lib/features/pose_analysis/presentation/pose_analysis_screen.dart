@@ -6,11 +6,18 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/network/backend_client.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/tul_gradients.dart';
+import '../../../core/theme/tul_palette.dart';
+import '../../../core/theme/tul_radius.dart';
+import '../../../core/theme/tul_text_styles.dart';
 import '../../../shared/widgets/app_shell.dart' show kAppShellContentBottomInset;
 import '../../../shared/widgets/grad_header_text.dart';
+import '../../../shared/widgets/tul_app_bar.dart';
+import '../../../shared/widgets/tul_buttons.dart';
+import '../../../shared/widgets/tul_card.dart';
 import 'web_camera.dart';
 
 // ─── State ────────────────────────────────────────────
@@ -125,8 +132,8 @@ class _PoseNotifier extends StateNotifier<_PoseState> {
         await _picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
     if (file == null) return;
     final bytes = await file.readAsBytes();
-    state =
-        state.copyWith(studentBytes: bytes, studentName: file.name, clearResult: true);
+    state = state.copyWith(
+        studentBytes: bytes, studentName: file.name, clearResult: true);
   }
 
   Future<void> pickFromCamera() async {
@@ -134,8 +141,8 @@ class _PoseNotifier extends StateNotifier<_PoseState> {
         await _picker.pickImage(source: ImageSource.camera, imageQuality: 85);
     if (file == null) return;
     final bytes = await file.readAsBytes();
-    state =
-        state.copyWith(studentBytes: bytes, studentName: file.name, clearResult: true);
+    state = state.copyWith(
+        studentBytes: bytes, studentName: file.name, clearResult: true);
   }
 
   void setStudentPhoto(Uint8List bytes, String name) =>
@@ -194,11 +201,12 @@ class PoseAnalysisScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final palette = context.tul;
     final state = ref.watch(_poseProvider);
     final notifier = ref.read(_poseProvider.notifier);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: palette.bg,
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
@@ -250,6 +258,7 @@ class PoseAnalysisScreen extends ConsumerWidget {
   }
 
   Widget _buildHeader(BuildContext context) {
+    final palette = context.tul;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -261,31 +270,33 @@ class PoseAnalysisScreen extends ConsumerWidget {
               const SizedBox(height: 6),
               Text(
                 'pose.subtitle'.tr(),
-                style: TextStyle(fontSize: 13, color: AppColors.textMuted),
+                style: TulTextStyles.subtitle(color: palette.text2),
               ),
             ],
           ),
         ),
         const SizedBox(width: 10),
-        // History icon button
         Tooltip(
           message: 'pose.recordsTitle'.tr(),
-          child: GestureDetector(
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute<void>(
-                  builder: (_) => const _PoseRecordsScreen()),
-            ),
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.border),
+          child: Material(
+            color: palette.card,
+            borderRadius: TulRadius.brMd,
+            child: InkWell(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute<void>(
+                    builder: (_) => const _PoseRecordsScreen()),
               ),
-              child: Icon(Icons.history_rounded,
-                  size: 20, color: AppColors.textSecondary),
+              borderRadius: TulRadius.brMd,
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  borderRadius: TulRadius.brMd,
+                  border: Border.all(color: palette.border),
+                ),
+                child: Icon(LucideIcons.history, size: 20, color: palette.text2),
+              ),
             ),
           ),
         ),
@@ -302,36 +313,28 @@ class _TulSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     if (state.tulList.isEmpty) {
-      return Container(
-        height: 56,
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: Center(
-          child: SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(
-                strokeWidth: 2, color: AppColors.primary),
+      return TulCard(
+        child: SizedBox(
+          height: 40,
+          child: Center(
+            child: SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                  strokeWidth: 2, color: palette.primary),
+            ),
           ),
         ),
       );
     }
     final movements = state.movements;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
-      ),
-      padding: const EdgeInsets.all(16),
+    return TulCard(
       child: Column(
         children: [
-          _StyledDropdown<String>(
+          _PoseDropdown<String>(
             label: 'pose.tulLabel'.tr(),
             value: state.selectedTul,
             items: state.tulList
@@ -344,7 +347,7 @@ class _TulSelector extends StatelessWidget {
           ),
           if (movements.isNotEmpty) ...[
             const SizedBox(height: 12),
-            _StyledDropdown<int>(
+            _PoseDropdown<int>(
               label: 'pose.movementLabel'.tr(),
               value: state.selectedMovement,
               items: movements
@@ -362,8 +365,8 @@ class _TulSelector extends StatelessWidget {
   }
 }
 
-class _StyledDropdown<T> extends StatelessWidget {
-  const _StyledDropdown({
+class _PoseDropdown<T> extends StatelessWidget {
+  const _PoseDropdown({
     required this.label,
     required this.value,
     required this.items,
@@ -377,34 +380,33 @@ class _StyledDropdown<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DropdownButtonFormField<T>(
-      initialValue: value,
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: TextStyle(color: AppColors.textMuted, fontSize: 12),
-        filled: true,
-        fillColor: AppColors.surfaceVariant,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+    final palette = context.tul;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: TulTextStyles.small(color: palette.text3)),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+          decoration: BoxDecoration(
+            color: palette.muted,
+            borderRadius: TulRadius.brLg,
+            border: Border.all(color: palette.borderStrong),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<T>(
+              value: value,
+              isExpanded: true,
+              dropdownColor: palette.card,
+              icon: Icon(LucideIcons.chevronDown,
+                  size: 16, color: palette.text3),
+              style: TextStyle(color: palette.text, fontSize: 14),
+              items: items,
+              onChanged: onChanged,
+            ),
+          ),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.primary, width: 1.5),
-        ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        isDense: true,
-      ),
-      dropdownColor: AppColors.surface,
-      style: const TextStyle(color: Colors.white, fontSize: 14),
-      iconEnabledColor: AppColors.textMuted,
-      items: items,
-      onChanged: onChanged,
+      ],
     );
   }
 }
@@ -417,30 +419,26 @@ class _StudentPhotoSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Photo preview or placeholder
         if (state.studentBytes != null)
           ClipRRect(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: TulRadius.brXl3,
             child: Image.memory(
               state.studentBytes!,
-              height: 220,
               width: double.infinity,
-              fit: BoxFit.cover,
+              fit: BoxFit.fitWidth,
             ),
           )
         else
           Container(
             height: 220,
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                  color: AppColors.border.withValues(alpha: 0.6),
-                  width: 1.5,
-                  strokeAlign: BorderSide.strokeAlignInside),
+              color: palette.card,
+              borderRadius: TulRadius.brXl3,
+              border: Border.all(color: palette.borderStrong, width: 1.5),
             ),
             child: Center(
               child: Column(
@@ -449,50 +447,52 @@ class _StudentPhotoSection extends StatelessWidget {
                   Container(
                     width: 56,
                     height: 56,
+                    alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      gradient: AppColors.gradSoft,
-                      borderRadius: BorderRadius.circular(16),
+                      gradient: TulGradients.brandSoft,
+                      borderRadius: BorderRadius.circular(TulRadius.xl),
                     ),
-                    child: Icon(Icons.qr_code_scanner_rounded,
-                        size: 26, color: AppColors.primary),
+                    child: Icon(LucideIcons.scanLine,
+                        size: 26, color: palette.primary),
                   ),
                   const SizedBox(height: 12),
-                  Text('pose.myPhoto'.tr(),
-                      style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white)),
+                  Text(
+                    'pose.myPhoto'.tr(),
+                    style: TulTextStyles.bodyStrong(color: palette.text),
+                  ),
                   const SizedBox(height: 4),
-                  Text('pose.photoHint'.tr(),
-                      textAlign: TextAlign.center,
-                      style:
-                          TextStyle(fontSize: 11, color: AppColors.textMuted)),
+                  Text(
+                    'pose.photoHint'.tr(),
+                    textAlign: TextAlign.center,
+                    style: TulTextStyles.tiny(color: palette.text3),
+                  ),
                 ],
               ),
             ),
           ),
         const SizedBox(height: 12),
-        // Gallery / Camera buttons
         Row(
           children: [
             Expanded(
               child: _MediaButton(
-                icon: Icons.photo_library_outlined,
+                icon: LucideIcons.upload,
                 label: 'pose.gallery'.tr(),
-                color: AppColors.secondary,
+                color: palette.secondary,
                 onTap: notifier.pickFromGallery,
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: _MediaButton(
-                icon: Icons.camera_alt_outlined,
+                icon: LucideIcons.camera,
                 label: 'pose.camera'.tr(),
-                color: AppColors.primary,
+                color: palette.primary,
                 onTap: () async {
                   if (kIsWeb) {
                     final bytes = await showWebCamera(context);
-                    if (bytes != null) notifier.setStudentPhoto(bytes, 'camera.jpg');
+                    if (bytes != null) {
+                      notifier.setStudentPhoto(bytes, 'camera.jpg');
+                    }
                   } else {
                     notifier.pickFromCamera();
                   }
@@ -504,7 +504,7 @@ class _StudentPhotoSection extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           'pose.masterPhotoNote'.tr(),
-          style: TextStyle(fontSize: 11, color: AppColors.textMuted),
+          style: TulTextStyles.tiny(color: palette.text3),
         ),
       ],
     );
@@ -512,11 +512,12 @@ class _StudentPhotoSection extends StatelessWidget {
 }
 
 class _MediaButton extends StatelessWidget {
-  const _MediaButton(
-      {required this.icon,
-      required this.label,
-      required this.color,
-      required this.onTap});
+  const _MediaButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
 
   final IconData icon;
   final String label;
@@ -525,33 +526,35 @@ class _MediaButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withValues(alpha: 0.2)),
-        ),
-        child: Column(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
+    final palette = context.tul;
+    return Material(
+      color: palette.card,
+      borderRadius: TulRadius.brLg,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: TulRadius.brLg,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
+          decoration: BoxDecoration(
+            borderRadius: TulRadius.brLg,
+            border: Border.all(color: palette.borderStrong),
+          ),
+          child: Column(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(TulRadius.md),
+                ),
+                child: Icon(icon, size: 20, color: color),
               ),
-              child: Icon(icon, size: 20, color: color),
-            ),
-            const SizedBox(height: 10),
-            Text(label,
-                style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white)),
-          ],
+              const SizedBox(height: 10),
+              Text(label, style: TulTextStyles.subtitle(color: palette.text)),
+            ],
+          ),
         ),
       ),
     );
@@ -566,18 +569,20 @@ class _AnalyzeButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final palette = context.tul;
     final enabled = state.canAnalyze;
     return GestureDetector(
       onTap: enabled
-          ? () => notifier.analyze(Localizations.localeOf(context).languageCode)
+          ? () =>
+              notifier.analyze(Localizations.localeOf(context).languageCode)
           : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         height: 54,
         decoration: BoxDecoration(
-          gradient: enabled ? AppColors.gradMain : null,
-          color: enabled ? null : AppColors.muted,
-          borderRadius: BorderRadius.circular(16),
+          gradient: enabled ? TulGradients.brand : null,
+          color: enabled ? null : palette.muted,
+          borderRadius: TulRadius.brLg,
         ),
         child: Center(
           child: state.loading
@@ -590,16 +595,17 @@ class _AnalyzeButton extends ConsumerWidget {
               : Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.analytics_outlined,
+                    Icon(LucideIcons.activity,
                         size: 18,
-                        color: enabled ? Colors.white : AppColors.textMuted),
+                        color: enabled ? Colors.white : palette.text3),
                     const SizedBox(width: 8),
                     Text(
                       'pose.analyzeBtn'.tr(),
                       style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: enabled ? Colors.white : AppColors.textMuted),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: enabled ? Colors.white : palette.text3,
+                      ),
                     ),
                   ],
                 ),
@@ -613,37 +619,40 @@ class _AnalyzeButton extends ConsumerWidget {
 class _InfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: AppColors.gradSoft,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.18)),
+    final palette = context.tul;
+    return TulCard(
+      background: Color.alphaBlend(
+        palette.primary.withValues(alpha: 0.06),
+        palette.card,
       ),
+      borderColor: palette.primary.withValues(alpha: 0.18),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             width: 40,
             height: 40,
+            alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(12),
+              color: palette.primary.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(TulRadius.md),
             ),
-            child: Icon(Icons.timeline_rounded,
-                size: 20, color: AppColors.primary),
+            child: Icon(LucideIcons.activity, size: 20, color: palette.primary),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Compared to master reference',
-                    style:
-                        TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 2),
+                Text(
+                  'Compared to master reference',
+                  style: TulTextStyles.smallStrong(color: palette.text),
+                ),
+                const SizedBox(height: 4),
                 Text(
                   'Form, stance and technique scored against the ITF reference for this exact movement.',
-                  style: TextStyle(fontSize: 11, color: AppColors.textMuted, height: 1.5),
+                  style: TulTextStyles.tiny(color: palette.text2)
+                      .copyWith(height: 1.5),
                 ),
               ],
             ),
@@ -654,7 +663,7 @@ class _InfoCard extends StatelessWidget {
   }
 }
 
-// ─── Result section (compact) ─────────────────────────
+// ─── Result section ───────────────────────────────────
 class _ResultSection extends StatelessWidget {
   const _ResultSection({
     required this.result,
@@ -669,6 +678,7 @@ class _ResultSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     final masterB64 = result['master_stick'] as String?;
     final studentB64 = result['student_stick'] as String?;
     final feedback = result['feedback'] as String? ?? '';
@@ -681,7 +691,6 @@ class _ResultSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Stick figure comparison
         if (masterB64 != null || studentB64 != null)
           Row(
             children: [
@@ -690,52 +699,49 @@ class _ResultSection extends StatelessWidget {
                     child: _StickCard(
                         label: 'pose.studentLabel'.tr(),
                         b64: studentB64,
-                        accentColor: AppColors.primary)),
+                        accentColor: palette.primary)),
               const SizedBox(width: 10),
               if (masterB64 != null)
                 Expanded(
                     child: _StickCard(
                         label: 'pose.masterLabel'.tr(),
                         b64: masterB64,
-                        accentColor: AppColors.secondary)),
+                        accentColor: palette.secondary)),
             ],
           ),
         const SizedBox(height: 16),
 
         // Score card
-        Container(
-          padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.border),
-          ),
+        TulCard(
           child: Column(
             children: [
-              Text('pose.aiFeedback'.tr().toUpperCase(),
-                  style: TextStyle(
-                      fontSize: 10,
-                      letterSpacing: 0.12,
-                      color: AppColors.textMuted,
-                      fontWeight: FontWeight.w600)),
-              const SizedBox(height: 10),
-              ShaderMask(
-                shaderCallback: (b) => AppColors.gradMain.createShader(b),
-                child: Text('$score',
-                    style: const TextStyle(
-                        fontSize: 56,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white)),
+              Text(
+                'pose.aiFeedback'.tr().toUpperCase(),
+                style: TulTextStyles.gaugeLabel(color: palette.text3),
               ),
-              const SizedBox(height: 12),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: score / 100,
-                  minHeight: 6,
-                  backgroundColor: Colors.white.withValues(alpha: 0.06),
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(AppColors.primary),
+              const SizedBox(height: 8),
+              ShaderMask(
+                shaderCallback: (b) => TulGradients.brand.createShader(b),
+                child: Text(
+                  '$score',
+                  style: TulTextStyles.gaugeNum(color: Colors.white),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Container(
+                height: 6,
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  color: palette.text.withValues(alpha: 0.06),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+                alignment: Alignment.centerLeft,
+                child: FractionallySizedBox(
+                  widthFactor: score / 100,
+                  child: Container(
+                    decoration: const BoxDecoration(
+                        gradient: TulGradients.brand),
+                  ),
                 ),
               ),
               const SizedBox(height: 6),
@@ -743,20 +749,14 @@ class _ResultSection extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text('0',
-                      style: TextStyle(
-                          fontSize: 10,
-                          color: AppColors.textMuted,
-                          fontFamily: 'monospace')),
+                      style:
+                          TulTextStyles.mono(size: 10, color: palette.text3)),
                   Text('50',
-                      style: TextStyle(
-                          fontSize: 10,
-                          color: AppColors.textMuted,
-                          fontFamily: 'monospace')),
+                      style:
+                          TulTextStyles.mono(size: 10, color: palette.text3)),
                   Text('100',
-                      style: TextStyle(
-                          fontSize: 10,
-                          color: AppColors.textMuted,
-                          fontFamily: 'monospace')),
+                      style:
+                          TulTextStyles.mono(size: 10, color: palette.text3)),
                 ],
               ),
             ],
@@ -767,130 +767,20 @@ class _ResultSection extends StatelessWidget {
         // Action buttons
         Row(
           children: [
-            // Save button
             Expanded(
-              child: GestureDetector(
-                onTap: saved
-                    ? null
-                    : () async {
-                        final confirmed = await showDialog<bool>(
-                          context: context,
-                          builder: (ctx) => AlertDialog(
-                            backgroundColor: AppColors.surface,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(18)),
-                            title: Text('pose.saveConfirmTitle'.tr(),
-                                style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700)),
-                            content: Text('pose.saveConfirmBody'.tr(),
-                                style: TextStyle(
-                                    fontSize: 13,
-                                    color: AppColors.textSecondary)),
-                            actions: [
-                              TextButton(
-                                onPressed: () =>
-                                    Navigator.of(ctx).pop(false),
-                                child: Text('pose.saveConfirmCancel'.tr(),
-                                    style: TextStyle(
-                                        color: AppColors.textMuted)),
-                              ),
-                              TextButton(
-                                onPressed: () =>
-                                    Navigator.of(ctx).pop(true),
-                                child: Text('pose.saveConfirmOk'.tr(),
-                                    style: TextStyle(
-                                        color: AppColors.primary,
-                                        fontWeight: FontWeight.w700)),
-                              ),
-                            ],
-                          ),
-                        );
-                        if (confirmed == true) onSave();
-                      },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  height: 50,
-                  decoration: BoxDecoration(
-                    gradient: saved || saving ? null : AppColors.gradMain,
-                    color: saved
-                        ? AppColors.success.withValues(alpha: 0.15)
-                        : saving
-                            ? AppColors.muted
-                            : null,
-                    borderRadius: BorderRadius.circular(14),
-                    border: saved
-                        ? Border.all(
-                            color: AppColors.success.withValues(alpha: 0.4))
-                        : null,
-                  ),
-                  child: Center(
-                    child: saving
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white))
-                        : Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                saved
-                                    ? Icons.check_circle_rounded
-                                    : Icons.save_outlined,
-                                size: 16,
-                                color: saved
-                                    ? AppColors.success
-                                    : Colors.white,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                saved
-                                    ? 'pose.savedBtn'.tr()
-                                    : 'pose.saveBtn'.tr(),
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: saved
-                                      ? AppColors.success
-                                      : Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                  ),
-                ),
+              child: _SaveButton(
+                saved: saved,
+                saving: saving,
+                onSave: onSave,
               ),
             ),
             const SizedBox(width: 10),
-            // View Details button
             Expanded(
-              child: GestureDetector(
-                onTap: () => _showDetails(
+              child: TulSecondaryButton(
+                label: 'pose.viewDetails'.tr(),
+                icon: LucideIcons.fileText,
+                onPressed: () => _showDetails(
                     context, feedback, masterAngles, studentAngles, score),
-                child: Container(
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: Center(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.article_outlined,
-                            size: 16, color: AppColors.text),
-                        const SizedBox(width: 6),
-                        Text(
-                          'pose.viewDetails'.tr(),
-                          style: const TextStyle(
-                              fontSize: 13, fontWeight: FontWeight.w600),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
               ),
             ),
           ],
@@ -909,78 +799,193 @@ class _ResultSection extends StatelessWidget {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (ctx) => DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.7,
-        minChildSize: 0.4,
-        maxChildSize: 0.95,
-        builder: (_, controller) => Column(
-          children: [
-            const SizedBox(height: 8),
-            Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.border,
-                borderRadius: BorderRadius.circular(2),
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        final p = ctx.tul;
+        return DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.7,
+          minChildSize: 0.4,
+          maxChildSize: 0.95,
+          builder: (_, controller) => Container(
+            decoration: BoxDecoration(
+              color: p.card,
+              borderRadius:
+                  const BorderRadius.vertical(top: TulRadius.rXl4),
+              border: Border(
+                top: BorderSide(color: p.border),
+                left: BorderSide(color: p.border),
+                right: BorderSide(color: p.border),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 14, 20, 10),
-              child: Row(
-                children: [
-                  Text('pose.detailsTitle'.tr(),
-                      style: const TextStyle(
-                          fontSize: 17, fontWeight: FontWeight.w700)),
-                  const Spacer(),
-                  ShaderMask(
-                    shaderCallback: (b) => AppColors.gradMain.createShader(b),
-                    child: Text('$score',
-                        style: const TextStyle(
+            child: Column(
+              children: [
+                const SizedBox(height: 8),
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 4),
+                    decoration: BoxDecoration(
+                      color: p.borderStrong,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+                  child: Row(
+                    children: [
+                      Text(
+                        'pose.detailsTitle'.tr(),
+                        style: TulTextStyles.h2(color: p.text),
+                      ),
+                      const Spacer(),
+                      ShaderMask(
+                        shaderCallback: (b) =>
+                            TulGradients.brand.createShader(b),
+                        child: Text(
+                          '$score',
+                          style: const TextStyle(
                             fontSize: 26,
                             fontWeight: FontWeight.w800,
-                            color: Colors.white)),
-                  ),
-                ],
-              ),
-            ),
-            Divider(color: AppColors.border, height: 1),
-            Expanded(
-              child: SingleChildScrollView(
-                controller: controller,
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (masterAngles.isNotEmpty) ...[
-                      _AngleTable(
-                          masterAngles: masterAngles,
-                          studentAngles: studentAngles),
-                      const SizedBox(height: 16),
-                    ],
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.background,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.border),
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
-                      child: SelectableText(
-                        feedback,
-                        style: TextStyle(
-                            fontSize: 14,
-                            color: AppColors.text,
-                            height: 1.6),
+                    ],
+                  ),
+                ),
+                Divider(color: p.border, height: 1),
+                Expanded(
+                  child: SingleChildScrollView(
+                    controller: controller,
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (masterAngles.isNotEmpty) ...[
+                          _AngleTable(
+                              masterAngles: masterAngles,
+                              studentAngles: studentAngles),
+                          const SizedBox(height: 16),
+                        ],
+                        TulCard(
+                          background: p.bg,
+                          child: SelectableText(
+                            feedback,
+                            style: TulTextStyles.body(color: p.text),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _SaveButton extends StatelessWidget {
+  const _SaveButton(
+      {required this.saved, required this.saving, required this.onSave});
+  final bool saved;
+  final bool saving;
+  final VoidCallback onSave;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.tul;
+    return GestureDetector(
+      onTap: saved
+          ? null
+          : () async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (ctx) {
+                  final p = ctx.tul;
+                  return AlertDialog(
+                    backgroundColor: p.card,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: TulRadius.brXl3),
+                    title: Text(
+                      'pose.saveConfirmTitle'.tr(),
+                      style: TulTextStyles.h2(color: p.text),
+                    ),
+                    content: Text(
+                      'pose.saveConfirmBody'.tr(),
+                      style: TulTextStyles.body(color: p.text2),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(ctx).pop(false),
+                        child: Text(
+                          'pose.saveConfirmCancel'.tr(),
+                          style: TulTextStyles.bodyMd(color: p.text3),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.of(ctx).pop(true),
+                        child: Text(
+                          'pose.saveConfirmOk'.tr(),
+                          style: TulTextStyles.bodyMd(color: p.primary)
+                              .copyWith(fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              );
+              if (confirmed == true) onSave();
+            },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        height: 50,
+        decoration: BoxDecoration(
+          gradient: saved || saving ? null : TulGradients.brand,
+          color: saved
+              ? palette.green.withValues(alpha: 0.15)
+              : saving
+                  ? palette.muted
+                  : null,
+          borderRadius: TulRadius.brLg,
+          border: saved
+              ? Border.all(color: palette.green.withValues(alpha: 0.4))
+              : null,
+        ),
+        child: Center(
+          child: saving
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: Colors.white),
+                )
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      saved ? LucideIcons.checkCircle : LucideIcons.save,
+                      size: 16,
+                      color: saved ? palette.green : Colors.white,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      saved
+                          ? 'pose.savedBtn'.tr()
+                          : 'pose.saveBtn'.tr(),
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: saved ? palette.green : Colors.white,
                       ),
                     ),
                   ],
                 ),
-              ),
-            ),
-          ],
         ),
       ),
     );
@@ -999,15 +1004,17 @@ class _StickCard extends StatelessWidget {
     final bytes = base64Decode(b64);
     return Column(
       children: [
-        Text(label.toUpperCase(),
-            style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: accentColor,
-                letterSpacing: 0.08)),
+        Text(
+          label.toUpperCase(),
+          style: TulTextStyles.mono(
+              size: 10,
+              weight: FontWeight.w600,
+              color: accentColor,
+              letterSpacing: 1),
+        ),
         const SizedBox(height: 6),
         ClipRRect(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: TulRadius.brXl,
           child: Image.memory(bytes, fit: BoxFit.contain),
         ),
       ],
@@ -1015,6 +1022,7 @@ class _StickCard extends StatelessWidget {
   }
 }
 
+// ─── Angle table ──────────────────────────────────────
 class _AngleTable extends StatelessWidget {
   const _AngleTable(
       {required this.masterAngles, required this.studentAngles});
@@ -1023,98 +1031,79 @@ class _AngleTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     final keys = masterAngles.keys.toList();
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
-      ),
-      padding: const EdgeInsets.all(16),
+    return TulCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('pose.jointAngles'.tr(),
-              style: const TextStyle(
-                  fontSize: 13, fontWeight: FontWeight.w600)),
+              style: TulTextStyles.cardHeader(color: palette.text)),
           const SizedBox(height: 10),
           Row(children: [
             Expanded(
                 flex: 3,
                 child: Text('pose.jointCol'.tr(),
-                    style: TextStyle(
-                        fontSize: 10,
-                        color: AppColors.textMuted,
-                        fontWeight: FontWeight.w600))),
+                    style: TulTextStyles.micro(color: palette.text3)
+                        .copyWith(fontWeight: FontWeight.w600))),
             Expanded(
                 flex: 2,
                 child: Text('pose.masterLabel'.tr(),
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                        fontSize: 10,
-                        color: AppColors.secondary,
-                        fontWeight: FontWeight.w600))),
+                    style: TulTextStyles.micro(color: palette.secondary)
+                        .copyWith(fontWeight: FontWeight.w600))),
             Expanded(
                 flex: 2,
                 child: Text('pose.studentLabel'.tr(),
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                        fontSize: 10,
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600))),
+                    style: TulTextStyles.micro(color: palette.primary)
+                        .copyWith(fontWeight: FontWeight.w600))),
             Expanded(
                 flex: 2,
                 child: Text('pose.diffCol'.tr(),
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                        fontSize: 10,
-                        color: AppColors.textMuted,
-                        fontWeight: FontWeight.w600))),
+                    style: TulTextStyles.micro(color: palette.text3)
+                        .copyWith(fontWeight: FontWeight.w600))),
           ]),
           const SizedBox(height: 8),
-          Container(height: 1, color: AppColors.border),
+          Container(height: 1, color: palette.border),
           const SizedBox(height: 8),
           ...keys.map((k) {
             final mv = (masterAngles[k] as num).toDouble();
-            final sv =
-                (studentAngles[k] as num?)?.toDouble() ?? mv;
+            final sv = (studentAngles[k] as num?)?.toDouble() ?? mv;
             final diff = sv - mv;
             final color = diff.abs() < 10
-                ? const Color(0xFF10B981)
+                ? palette.green
                 : diff.abs() < 20
-                    ? const Color(0xFFFACC15)
-                    : AppColors.primary;
+                    ? palette.yellow
+                    : palette.primary;
             final sign = diff >= 0 ? '+' : '';
             final translated = 'pose.angles.$k'.tr();
-            final keyLabel = translated.startsWith('pose.angles.') ? k : translated;
+            final keyLabel =
+                translated.startsWith('pose.angles.') ? k : translated;
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: Row(children: [
                 Expanded(
                     flex: 3,
                     child: Text(keyLabel,
-                        style: TextStyle(
-                            fontSize: 12, color: AppColors.text))),
+                        style: TulTextStyles.small(color: palette.text))),
                 Expanded(
                     flex: 2,
                     child: Text('${mv.toStringAsFixed(1)}°',
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 12, color: AppColors.textSecondary))),
+                        style: TulTextStyles.small(color: palette.text2))),
                 Expanded(
                     flex: 2,
                     child: Text('${sv.toStringAsFixed(1)}°',
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 12, color: AppColors.textSecondary))),
+                        style: TulTextStyles.small(color: palette.text2))),
                 Expanded(
                     flex: 2,
                     child: Text('$sign${diff.toStringAsFixed(1)}°',
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: color))),
+                        style: TulTextStyles.small(color: color)
+                            .copyWith(fontWeight: FontWeight.w600))),
               ]),
             );
           }),
@@ -1124,26 +1113,28 @@ class _AngleTable extends StatelessWidget {
   }
 }
 
+// ─── Error card ───────────────────────────────────────
 class _ErrorCard extends StatelessWidget {
   const _ErrorCard({required this.message});
   final String message;
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+        color: palette.primary.withValues(alpha: 0.1),
+        borderRadius: TulRadius.brXl,
+        border: Border.all(color: palette.primary.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
-          Icon(Icons.error_outline_rounded, color: AppColors.primary, size: 18),
+          Icon(LucideIcons.alertCircle, color: palette.primary, size: 18),
           const SizedBox(width: 10),
           Expanded(
             child: Text(message,
-                style: TextStyle(fontSize: 13, color: AppColors.text)),
+                style: TulTextStyles.subtitle(color: palette.text)),
           ),
         ],
       ),
@@ -1197,9 +1188,19 @@ class _PoseRecordsScreenState extends ConsumerState<_PoseRecordsScreen> {
             page: _page,
             pageSize: _pageSize,
           );
-      if (mounted) setState(() { _pageData = data; _loading = false; });
+      if (mounted) {
+        setState(() {
+          _pageData = data;
+          _loading = false;
+        });
+      }
     } catch (e) {
-      if (mounted) setState(() { _error = e.toString(); _loading = false; });
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _loading = false;
+        });
+      }
     }
   }
 
@@ -1213,7 +1214,10 @@ class _PoseRecordsScreenState extends ConsumerState<_PoseRecordsScreen> {
   }
 
   void _selectMovement(int? no) {
-    setState(() { _selectedMovementNo = no; _page = 1; });
+    setState(() {
+      _selectedMovementNo = no;
+      _page = 1;
+    });
     _fetch();
   }
 
@@ -1233,6 +1237,7 @@ class _PoseRecordsScreenState extends ConsumerState<_PoseRecordsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     final records =
         (_pageData?['records'] as List?)?.cast<Map<String, dynamic>>() ?? [];
     final totalPages = (_pageData?['total_pages'] as int?) ?? 1;
@@ -1241,38 +1246,14 @@ class _PoseRecordsScreenState extends ConsumerState<_PoseRecordsScreen> {
     final rangeTo = (_page * _pageSize).clamp(0, total);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: palette.bg,
+      appBar: TulAppBar(
+        title: 'pose.recordsTitle'.tr(),
+        onBack: () => Navigator.pop(context),
+      ),
       body: Column(
         children: [
-          // ── Header ───────────────────────────────────
-          Container(
-            color: AppColors.stage,
-            padding: const EdgeInsets.fromLTRB(16, 52, 16, 14),
-            child: Row(
-              children: [
-                GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: AppColors.border),
-                    ),
-                    child: Icon(Icons.chevron_left_rounded,
-                        color: AppColors.text, size: 20),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text('pose.recordsTitle'.tr(),
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.w700)),
-              ],
-            ),
-          ),
-
-          // ── Dropdown filter ───────────────────────────
+          // ── Filter dropdowns ───────────────────────────
           if (_tulList.isNotEmpty)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
@@ -1295,7 +1276,8 @@ class _PoseRecordsScreenState extends ConsumerState<_PoseRecordsScreen> {
                       onChanged: (v) => _selectTul(v),
                     ),
                   ),
-                  if (_selectedTulId != null && _currentMovements.isNotEmpty) ...[
+                  if (_selectedTulId != null &&
+                      _currentMovements.isNotEmpty) ...[
                     const SizedBox(width: 10),
                     Expanded(
                       child: _RecordsDropdown<int?>(
@@ -1322,34 +1304,35 @@ class _PoseRecordsScreenState extends ConsumerState<_PoseRecordsScreen> {
               ),
             ),
 
-          // ── List ─────────────────────────────────────
+          // ── List ──────────────────────────────────────
           Expanded(
             child: _loading
                 ? Center(
-                    child: CircularProgressIndicator(color: AppColors.primary))
+                    child: CircularProgressIndicator(color: palette.primary))
                 : _error != null
                     ? Center(
                         child: Text(_error!,
-                            style: TextStyle(color: AppColors.textMuted)))
+                            style:
+                                TulTextStyles.subtitle(color: palette.text3)))
                     : records.isEmpty
                         ? Center(
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.history_rounded,
+                                Icon(LucideIcons.history,
                                     size: 48,
-                                    color: AppColors.textMuted
+                                    color: palette.text3
                                         .withValues(alpha: 0.4)),
                                 const SizedBox(height: 12),
                                 Text('pose.noRecords'.tr(),
-                                    style: TextStyle(
-                                        color: AppColors.textMuted,
-                                        fontSize: 14)),
+                                    style: TulTextStyles.subtitle(
+                                        color: palette.text3)),
                               ],
                             ),
                           )
                         : ListView.builder(
-                            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                            padding: EdgeInsets.fromLTRB(
+                                16, 12, 16, kAppShellContentBottomInset + 8),
                             itemCount: records.length,
                             itemBuilder: (context, i) {
                               final record = records[i];
@@ -1360,53 +1343,57 @@ class _PoseRecordsScreenState extends ConsumerState<_PoseRecordsScreen> {
                                 background: Container(
                                   margin: const EdgeInsets.only(bottom: 10),
                                   decoration: BoxDecoration(
-                                    color: AppColors.primary,
-                                    borderRadius: BorderRadius.circular(18),
+                                    color: palette.primary,
+                                    borderRadius: TulRadius.brXl2,
                                   ),
                                   alignment: Alignment.centerRight,
                                   padding: const EdgeInsets.only(right: 20),
-                                  child: const Icon(Icons.delete_outline_rounded,
-                                      color: Colors.white, size: 22),
+                                  child: const Icon(
+                                      LucideIcons.trash2,
+                                      color: Colors.white,
+                                      size: 20),
                                 ),
                                 confirmDismiss: (_) async {
                                   return await showDialog<bool>(
                                     context: context,
-                                    builder: (ctx) => AlertDialog(
-                                      backgroundColor: AppColors.surface,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(18)),
-                                      title: Text(
-                                          'pose.deleteConfirmTitle'.tr(),
-                                          style: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w700)),
-                                      content: Text(
-                                          'pose.deleteConfirmBody'.tr(),
-                                          style: TextStyle(
-                                              fontSize: 13,
-                                              color: AppColors.textSecondary)),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () =>
-                                              Navigator.of(ctx).pop(false),
-                                          child: Text(
-                                              'pose.deleteConfirmCancel'.tr(),
-                                              style: TextStyle(
-                                                  color: AppColors.textMuted)),
-                                        ),
-                                        TextButton(
-                                          onPressed: () =>
-                                              Navigator.of(ctx).pop(true),
-                                          child: Text(
-                                              'pose.deleteConfirmOk'.tr(),
-                                              style: TextStyle(
-                                                  color: AppColors.primary,
-                                                  fontWeight:
-                                                      FontWeight.w700)),
-                                        ),
-                                      ],
-                                    ),
+                                    builder: (ctx) {
+                                      final p = ctx.tul;
+                                      return AlertDialog(
+                                        backgroundColor: p.card,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius: TulRadius.brXl3),
+                                        title: Text(
+                                            'pose.deleteConfirmTitle'.tr(),
+                                            style: TulTextStyles.h2(
+                                                color: p.text)),
+                                        content: Text(
+                                            'pose.deleteConfirmBody'.tr(),
+                                            style: TulTextStyles.body(
+                                                color: p.text2)),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.of(ctx).pop(false),
+                                            child: Text(
+                                                'pose.deleteConfirmCancel'
+                                                    .tr(),
+                                                style: TulTextStyles.bodyMd(
+                                                    color: p.text3)),
+                                          ),
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.of(ctx).pop(true),
+                                            child: Text(
+                                                'pose.deleteConfirmOk'.tr(),
+                                                style: TulTextStyles.bodyMd(
+                                                        color: p.primary)
+                                                    .copyWith(
+                                                        fontWeight:
+                                                            FontWeight.w700)),
+                                          ),
+                                        ],
+                                      );
+                                    },
                                   );
                                 },
                                 onDismissed: (_) async {
@@ -1444,9 +1431,12 @@ class _PoseRecordsScreenState extends ConsumerState<_PoseRecordsScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _PagBtn(
-                    icon: Icons.chevron_left_rounded,
+                    icon: LucideIcons.chevronLeft,
                     enabled: _page > 1,
-                    onTap: () { setState(() => _page--); _fetch(); },
+                    onTap: () {
+                      setState(() => _page--);
+                      _fetch();
+                    },
                   ),
                   const SizedBox(width: 16),
                   Column(
@@ -1454,26 +1444,23 @@ class _PoseRecordsScreenState extends ConsumerState<_PoseRecordsScreen> {
                     children: [
                       Text(
                         '$_page / $totalPages',
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: TulTextStyles.cardHeader(color: palette.text),
                       ),
                       const SizedBox(height: 1),
                       Text(
                         '$rangeFrom–$rangeTo / $total',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: AppColors.textMuted,
-                        ),
+                        style: TulTextStyles.tiny(color: palette.text3),
                       ),
                     ],
                   ),
                   const SizedBox(width: 16),
                   _PagBtn(
-                    icon: Icons.chevron_right_rounded,
+                    icon: LucideIcons.chevronRight,
                     enabled: _page < totalPages,
-                    onTap: () { setState(() => _page++); _fetch(); },
+                    onTap: () {
+                      setState(() => _page++);
+                      _fetch();
+                    },
                   ),
                 ],
               ),
@@ -1498,24 +1485,24 @@ class _RecordsDropdown<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     return Container(
       height: 38,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.border),
+        color: palette.card,
+        borderRadius: TulRadius.brSm,
+        border: Border.all(color: palette.borderStrong),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<T>(
           value: value,
           isExpanded: true,
-          dropdownColor: AppColors.surface,
-          icon: Icon(Icons.expand_more_rounded,
-              color: AppColors.textMuted, size: 18),
-          style: TextStyle(fontSize: 13, color: AppColors.text),
+          dropdownColor: palette.card,
+          icon: Icon(LucideIcons.chevronDown, color: palette.text3, size: 16),
+          style: TulTextStyles.subtitle(color: palette.text),
           hint: Text(hint,
-              style: TextStyle(fontSize: 13, color: AppColors.textMuted),
+              style: TulTextStyles.subtitle(color: palette.text3),
               overflow: TextOverflow.ellipsis),
           onChanged: onChanged,
           items: items,
@@ -1531,11 +1518,14 @@ class _RecordCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final createdAt = DateTime.parse(record['created_at'] as String).toLocal();
+    final palette = context.tul;
+    final createdAt =
+        DateTime.parse(record['created_at'] as String).toLocal();
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final yesterday = today.subtract(const Duration(days: 1));
-    final recordDay = DateTime(createdAt.year, createdAt.month, createdAt.day);
+    final recordDay =
+        DateTime(createdAt.year, createdAt.month, createdAt.day);
 
     String dayLabel;
     if (recordDay == today) {
@@ -1557,80 +1547,61 @@ class _RecordCard extends StatelessWidget {
         ? tulDisplay.substring(0, tulDisplay.indexOf('(')).trim()
         : tulDisplay;
 
-    return GestureDetector(
+    return TulCard.compact(
       onTap: () => _showDetail(context, tulDisplay, movNo, movName,
           '$dayLabel · $timeFmt', feedback, score),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: Row(
-          children: [
-            // Thumbnail placeholder
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                gradient: AppColors.gradSoft,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.border),
-              ),
-              child: Center(
-                child: Text(
-                  '$movNo',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.primary,
+      child: Row(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              gradient: TulGradients.brandSoft,
+              borderRadius: TulRadius.brMd,
+              border: Border.all(color: palette.border),
+            ),
+            child: Text(
+              '$movNo',
+              style: TulTextStyles.statValue(color: palette.primary),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$shortTul M$movNo',
+                  style: TulTextStyles.smallStrong(color: palette.text),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  '$dayLabel · $timeFmt',
+                  style: TulTextStyles.tiny(color: palette.text3),
+                ),
+              ],
+            ),
+          ),
+          if (score != null)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                ShaderMask(
+                  shaderCallback: (b) => TulGradients.brand.createShader(b),
+                  child: Text(
+                    '$score',
+                    style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white),
                   ),
                 ),
-              ),
+                Text('score',
+                    style: TulTextStyles.tiny(color: palette.text3)),
+              ],
             ),
-            const SizedBox(width: 12),
-            // Title + date
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '$shortTul M$movNo',
-                    style: const TextStyle(
-                        fontSize: 13, fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    '$dayLabel · $timeFmt',
-                    style: TextStyle(fontSize: 11, color: AppColors.textMuted),
-                  ),
-                ],
-              ),
-            ),
-            // Score
-            if (score != null)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  ShaderMask(
-                    shaderCallback: (b) => AppColors.gradMain.createShader(b),
-                    child: Text(
-                      '$score',
-                      style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white),
-                    ),
-                  ),
-                  Text('score',
-                      style: TextStyle(
-                          fontSize: 10, color: AppColors.textMuted)),
-                ],
-              ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -1640,88 +1611,100 @@ class _RecordCard extends StatelessWidget {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) => DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.6,
-        minChildSize: 0.4,
-        maxChildSize: 0.92,
-        builder: (_, controller) => Column(
-          children: [
-            const SizedBox(height: 8),
-            Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.border,
-                borderRadius: BorderRadius.circular(2),
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        final p = ctx.tul;
+        return DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.6,
+          minChildSize: 0.4,
+          maxChildSize: 0.92,
+          builder: (_, controller) => Container(
+            decoration: BoxDecoration(
+              color: p.card,
+              borderRadius:
+                  const BorderRadius.vertical(top: TulRadius.rXl4),
+              border: Border(
+                top: BorderSide(color: p.border),
+                left: BorderSide(color: p.border),
+                right: BorderSide(color: p.border),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 14, 20, 6),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '$tulDisplay · $movNo. $movName',
-                          style: const TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w700),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(dateLabel,
-                            style: TextStyle(
-                                fontSize: 12, color: AppColors.textMuted)),
-                      ],
+            child: Column(
+              children: [
+                const SizedBox(height: 8),
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 4),
+                    decoration: BoxDecoration(
+                      color: p.borderStrong,
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  if (score != null) ...[
-                    const SizedBox(width: 12),
-                    Column(
-                      children: [
-                        ShaderMask(
-                          shaderCallback: (b) =>
-                              AppColors.gradMain.createShader(b),
-                          child: Text('$score',
-                              style: const TextStyle(
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.white)),
-                        ),
-                        Text('score',
-                            style: TextStyle(
-                                fontSize: 10, color: AppColors.textMuted)),
-                      ],
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            Divider(color: AppColors.border, height: 1),
-            Expanded(
-              child: SingleChildScrollView(
-                controller: controller,
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-                child: SelectableText(
-                  feedback,
-                  style:
-                      TextStyle(fontSize: 14, color: AppColors.text, height: 1.6),
                 ),
-              ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 6),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '$tulDisplay · $movNo. $movName',
+                              style: TulTextStyles.h2(color: p.text),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(dateLabel,
+                                style:
+                                    TulTextStyles.tiny(color: p.text3)),
+                          ],
+                        ),
+                      ),
+                      if (score != null) ...[
+                        const SizedBox(width: 12),
+                        Column(
+                          children: [
+                            ShaderMask(
+                              shaderCallback: (b) =>
+                                  TulGradients.brand.createShader(b),
+                              child: Text('$score',
+                                  style: const TextStyle(
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.white)),
+                            ),
+                            Text('score',
+                                style: TulTextStyles.tiny(color: p.text3)),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                Divider(color: p.border, height: 1),
+                Expanded(
+                  child: SingleChildScrollView(
+                    controller: controller,
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+                    child: SelectableText(
+                      feedback,
+                      style: TulTextStyles.body(color: p.text),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
 
-// ─── Pagination widgets ───────────────────────────────
+// ─── Pagination widget ────────────────────────────────
 class _PagBtn extends StatelessWidget {
   const _PagBtn(
       {required this.icon, required this.enabled, required this.onTap});
@@ -1731,22 +1714,21 @@ class _PagBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     return GestureDetector(
       onTap: enabled ? onTap : null,
       child: Container(
         width: 36,
         height: 36,
         decoration: BoxDecoration(
-          color: enabled ? AppColors.surface : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
+          color: enabled ? palette.card : Colors.transparent,
+          borderRadius: TulRadius.brSm,
           border: Border.all(
-              color: enabled ? AppColors.border : Colors.transparent),
+              color: enabled ? palette.border : Colors.transparent),
         ),
         child: Icon(icon,
-            size: 20,
-            color: enabled ? AppColors.text : AppColors.textDisabled),
+            size: 20, color: enabled ? palette.text : palette.text3),
       ),
     );
   }
 }
-
