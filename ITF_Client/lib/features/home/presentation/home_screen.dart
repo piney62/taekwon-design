@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/router/app_routes.dart';
-import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/tul_gradients.dart';
 import '../../../core/theme/tul_palette.dart';
 import '../../../core/theme/tul_radius.dart';
@@ -16,6 +15,7 @@ import '../../../shared/widgets/gradient_text.dart';
 import '../../../shared/widgets/list_row.dart';
 import '../../../shared/widgets/stat_card.dart';
 import '../../../shared/widgets/tul_buttons.dart';
+import '../../../shared/widgets/badge.dart';
 import '../../../shared/widgets/tul_card.dart';
 import '../../auth/application/providers.dart';
 import '../../journal/application/providers.dart';
@@ -451,195 +451,199 @@ class _InstructorHome extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final beltColor = AppColors.accent;
+    final palette = context.tul;
     return Scaffold(
       body: SafeArea(
         bottom: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(
-              20, 8, 20, kAppShellContentBottomInset),
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, kAppShellContentBottomInset),
           children: [
-            // ── Header ──────────────────────────────────────────────
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 24,
-                            height: 24,
-                            decoration: BoxDecoration(
-                              gradient: AppColors.gradMain,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: const Icon(
-                              Icons.local_fire_department,
-                              size: 13,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'ITF TulMaster',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(
-                                  color: AppColors.textSecondary,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'home.greeting'.tr(namedArgs: {'name': ''}),
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineLarge
-                            ?.copyWith(height: 1.1),
-                      ),
-                      ShaderMask(
-                        shaderCallback: (b) =>
-                            AppColors.gradMain.createShader(b),
-                        child: Text(
-                          authState.displayName.isEmpty
-                              ? '—'
-                              : authState.displayName,
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineLarge
-                              ?.copyWith(
-                                color: Colors.white,
-                                height: 1.1,
-                              ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                InkWell(
-                  onTap: () => context.push(AppRoutes.settings),
-                  borderRadius: BorderRadius.circular(14),
-                  child: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppColors.border),
-                    ),
-                    child: const Icon(
-                      Icons.settings_outlined,
-                      size: 18,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            _InstructorHeader(authState: authState),
             const SizedBox(height: 20),
 
-            // ── Instructor profile badge ─────────────────────────────
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.border),
+            // ── Needs Attention ──────────────────────────────────────
+            TulCard(
+              borderColor: palette.primary.withValues(alpha: 0.3),
+              background: Color.alphaBlend(
+                palette.primary.withValues(alpha: 0.08),
+                palette.card,
               ),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: beltColor.withValues(alpha: 0.12),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: beltColor.withValues(alpha: 0.4),
-                        width: 1.5,
-                      ),
-                    ),
-                    child:
-                        Icon(Icons.shield_outlined, color: beltColor, size: 26),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          authState.danRank.isNotEmpty
-                              ? authState.danRank
-                              : 'auth.roleInstructor'.tr(),
-                          style: Theme.of(context).textTheme.titleMedium,
+                  Row(
+                    children: [
+                      Icon(LucideIcons.alertCircle, size: 18, color: palette.primary),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Needs Attention',
+                          style: TulTextStyles.cardHeader(color: palette.text),
                         ),
-                        if (authState.dojoName.isNotEmpty)
-                          Text(
-                            authState.dojoName,
-                            style:
-                                Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: AppColors.textSecondary,
-                                    ),
-                          ),
-                      ],
-                    ),
+                      ),
+                      const TulBadge(label: '3', color: TulBadgeColor.red),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  const ListRow(
+                    icon: LucideIcons.user,
+                    iconColor: ListRowColor.primary,
+                    title: 'Jiwon Park',
+                    sub: 'No training in 8 days · Yellow Belt',
+                  ),
+                  const ListRow(
+                    icon: LucideIcons.user,
+                    iconColor: ListRowColor.primary,
+                    title: 'Alex Chen',
+                    sub: 'Repeated weak stance on Chon-Ji M3',
+                  ),
+                  const ListRow(
+                    icon: LucideIcons.user,
+                    iconColor: ListRowColor.primary,
+                    title: 'Sara Lee',
+                    sub: 'Homework overdue · 2 days',
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
 
-            // ── Quick actions ────────────────────────────────────────
-            Row(
+            // ── Stats row ────────────────────────────────────────────
+            const Row(
               children: [
                 Expanded(
-                  child: _ActionTile(
-                    icon: Icons.chat_bubble_outline_rounded,
-                    label: 'home.askCoach'.tr(),
-                    color: AppColors.secondary,
-                    onTap: () => context.go(AppRoutes.coach),
+                  child: StatCard(
+                    icon: LucideIcons.users,
+                    value: '12',
+                    label: 'Trained today',
+                    color: StatCardColor.primary,
                   ),
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10),
                 Expanded(
-                  child: _ActionTile(
-                    icon: Icons.groups_outlined,
-                    label: 'nav.dojo'.tr(),
-                    color: AppColors.accent,
-                    onTap: () => context.go(AppRoutes.journal),
+                  child: StatCard(
+                    icon: LucideIcons.flame,
+                    value: '4',
+                    label: 'Idle students',
+                    color: StatCardColor.secondary,
+                  ),
+                ),
+                SizedBox(width: 10),
+                Expanded(
+                  child: StatCard(
+                    icon: LucideIcons.alertCircle,
+                    value: '6',
+                    label: 'Pending HW',
+                    color: StatCardColor.accent,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
 
-            // ── Dojo hint card ───────────────────────────────────────
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.06),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.2)),
-              ),
-              child: Row(
+            // ── Quick actions ────────────────────────────────────────
+            Row(
+              children: [
+                Expanded(
+                  child: TulPrimaryButton(
+                    label: 'Assign HW',
+                    icon: LucideIcons.plus,
+                    onPressed: () => context.go(AppRoutes.journal),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TulSecondaryButton(
+                    label: 'Invite',
+                    icon: LucideIcons.qrCode,
+                    onPressed: () {},
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // ── Pending Reviews ──────────────────────────────────────
+            TulCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.groups_outlined,
-                      color: AppColors.primary, size: 20),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'home.instructorDojoHint'.tr(),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Pending Reviews',
+                          style: TulTextStyles.cardHeader(color: palette.text),
+                        ),
+                      ),
+                      const TulBadge(label: '4 waiting', color: TulBadgeColor.muted),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  ListRow(
+                    icon: LucideIcons.scanLine,
+                    iconColor: ListRowColor.secondary,
+                    title: 'Jiwon · Chon-Ji M5',
+                    sub: 'Submitted 2h ago',
+                    onTap: () => context.go(AppRoutes.journal),
+                  ),
+                  ListRow(
+                    icon: LucideIcons.scanLine,
+                    iconColor: ListRowColor.secondary,
+                    title: 'Alex · Dan-Gun M12',
+                    sub: 'Submitted yesterday',
+                    onTap: () => context.go(AppRoutes.journal),
+                  ),
+                  ListRow(
+                    icon: LucideIcons.scanLine,
+                    iconColor: ListRowColor.secondary,
+                    title: 'Sara · Do-San M2',
+                    sub: 'Submitted 2 days ago',
+                    onTap: () => context.go(AppRoutes.journal),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // ── Dojang Snapshot ──────────────────────────────────────
+            TulCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Dojang Snapshot',
+                          style: TulTextStyles.cardHeader(color: palette.text),
+                        ),
+                      ),
+                      TulGhostButton(
+                        label: 'Open',
+                        onPressed: () => context.go(AppRoutes.journal),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _InstructorMiniStat(
+                          value: '28',
+                          label: 'Total students',
+                          gradient: false,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _InstructorMiniStat(
+                          value: '78%',
+                          label: 'Weekly activity',
+                          gradient: true,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -651,45 +655,125 @@ class _InstructorHome extends ConsumerWidget {
   }
 }
 
-class _ActionTile extends StatelessWidget {
-  const _ActionTile({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onTap,
-  });
+// ── Instructor header ─────────────────────────────────────────────────────────
 
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
+class _InstructorHeader extends StatelessWidget {
+  const _InstructorHeader({required this.authState});
+
+  final dynamic authState;
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 18),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border, width: 1),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: color, size: 26),
-            const SizedBox(height: 6),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    fontSize: 13,
+    final palette = context.tul;
+    final rankLabel = (authState.danRank as String).isNotEmpty
+        ? authState.danRank as String
+        : 'auth.roleInstructor'.tr();
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      gradient: TulGradients.instructor,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(LucideIcons.award, size: 14, color: Colors.white),
                   ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+                  const SizedBox(width: 8),
+                  Text(rankLabel, style: TulTextStyles.small(color: palette.text2)),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'home.greeting'.tr(namedArgs: {'name': ''}),
+                style: TulTextStyles.title(color: palette.text),
+              ),
+              GradientText(
+                (authState.displayName as String).isEmpty ? '—' : authState.displayName as String,
+                gradient: TulGradients.brand,
+                style: TulTextStyles.title(),
+              ),
+            ],
+          ),
         ),
+        const SizedBox(width: 12),
+        Material(
+          color: palette.card,
+          borderRadius: TulRadius.brLg,
+          child: InkWell(
+            onTap: () => context.push(AppRoutes.settings),
+            borderRadius: TulRadius.brLg,
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                borderRadius: TulRadius.brLg,
+                border: Border.all(color: palette.border),
+              ),
+              alignment: Alignment.center,
+              child: Icon(LucideIcons.settings, size: 18, color: palette.text),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Instructor mini-stat ──────────────────────────────────────────────────────
+
+class _InstructorMiniStat extends StatelessWidget {
+  const _InstructorMiniStat({
+    required this.value,
+    required this.label,
+    required this.gradient,
+  });
+
+  final String value;
+  final String label;
+  final bool gradient;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.tul;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: palette.text.withValues(alpha: 0.03),
+        borderRadius: TulRadius.brLg,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          gradient
+              ? GradientText(
+                  value,
+                  gradient: TulGradients.brand,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.48,
+                  ),
+                )
+              : Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.48,
+                  ),
+                ),
+          const SizedBox(height: 4),
+          Text(label, style: TulTextStyles.tiny(color: palette.text3)),
+        ],
       ),
     );
   }
