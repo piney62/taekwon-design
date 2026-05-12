@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/widgets/app_shell.dart';
 import '../../../../shared/widgets/grad_header_text.dart';
 import '../../application/weakness_provider.dart';
 import '../../domain/entities/weakness_pattern.dart';
@@ -79,7 +80,7 @@ class _WeaknessDetailScreenState extends ConsumerState<WeaknessDetailScreen> {
           final pageItems = patterns.sublist(pageStart, pageEnd);
 
           return ListView(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, kAppShellContentBottomInset),
             children: [
               // ── 안내 배너 ──────────────────────────────────────────────
               Container(

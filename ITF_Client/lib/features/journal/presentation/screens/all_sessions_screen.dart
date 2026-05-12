@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/widgets/app_shell.dart';
 import '../../application/providers.dart';
 import '../../domain/entities/training_session.dart';
 import '../widgets/add_session_sheet.dart';
@@ -72,7 +73,7 @@ class _AllSessionsScreenState extends ConsumerState<AllSessionsScreen> {
                       ),
                     )
                   : ListView(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, kAppShellContentBottomInset),
                       children: [
                         ...pageSessions.map(
                           (s) => SessionCard(

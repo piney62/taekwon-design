@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/network/backend_client.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/app_shell.dart';
 import '../../../shared/widgets/grad_header_text.dart';
 import '../../auth/application/providers.dart';
 import '../../journal/application/providers.dart';
@@ -171,7 +172,7 @@ class _StudentStats extends ConsumerWidget {
                             child: MonthlySessionsChart(sessions: sessions),
                           ),
                         ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: kAppShellContentBottomInset),
                 ],
               ),
             ),
@@ -419,7 +420,7 @@ class _InstructorStatsBody extends StatelessWidget {
               _EmptyCard('stats.homeworkError'.tr()),
           data: (hw) => _HomeworkDonutCard(hw: hw),
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: kAppShellContentBottomInset),
       ],
     );
   }

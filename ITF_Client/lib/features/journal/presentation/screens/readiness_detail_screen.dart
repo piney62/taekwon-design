@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/widgets/app_shell.dart';
 import '../../../auth/application/providers.dart';
 import '../../../settings/application/providers.dart';
 import '../../application/readiness_provider.dart';
@@ -85,7 +86,7 @@ class ReadinessDetailScreen extends ConsumerWidget {
               ),
 
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 32, 20, 40),
+                padding: const EdgeInsets.fromLTRB(20, 32, 20, kAppShellContentBottomInset),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [

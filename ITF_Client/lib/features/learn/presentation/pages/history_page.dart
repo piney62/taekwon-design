@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/widgets/app_shell.dart';
 
 class HistoryPage extends StatelessWidget {
   const HistoryPage({super.key});
@@ -16,7 +17,7 @@ class HistoryPage extends StatelessWidget {
             _buildTopBar(context),
             Expanded(
               child: ListView.builder(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, kAppShellContentBottomInset),
                 itemCount: _events.length,
                 itemBuilder: (context, i) => _TimelineItem(
                   event: _events[i],

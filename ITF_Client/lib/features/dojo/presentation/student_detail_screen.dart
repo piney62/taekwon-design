@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/backend_client.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/app_shell.dart';
 import '../application/dojo_providers.dart';
 
 // ignore_for_file: avoid_dynamic_calls
@@ -344,7 +345,7 @@ class _CommentsTab extends StatelessWidget {
         ),
         // ── 코멘트 입력 ──────────────────────────────────────────────────
         Container(
-          padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, kAppShellContentBottomInset),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
             border: Border(
@@ -408,7 +409,7 @@ class _JournalTab extends StatelessWidget {
             journal['readiness'] as Map<String, dynamic>? ?? {};
 
         return ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, kAppShellContentBottomInset),
           children: [
             // ── 승급 준비 ───────────────────────────────────────────────
             Text('dojo.readinessTitle'.tr(),
@@ -598,7 +599,7 @@ class _HomeworkTab extends StatelessWidget {
         [];
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, kAppShellContentBottomInset),
       children: [
         // ── 현재 숙제 목록 ─────────────────────────────────────────────
         if (pendingList.isNotEmpty) ...[

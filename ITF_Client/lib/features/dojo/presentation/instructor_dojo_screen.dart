@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart' show Share;
 
 import '../../../core/network/backend_client.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/app_shell.dart';
 import '../../../shared/widgets/grad_header_text.dart';
 import '../application/dojo_providers.dart';
 import 'student_detail_screen.dart';
@@ -240,7 +241,7 @@ class _InstructorDojoScreenState extends ConsumerState<InstructorDojoScreen> {
                           .toList(),
                     ),
             ),
-            const SizedBox(height: 80),
+            const SizedBox(height: kAppShellContentBottomInset),
           ],
         ),
       ),

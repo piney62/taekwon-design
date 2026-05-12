@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/widgets/app_shell.dart';
 import '../../domain/entities/pattern.dart';
 import '../screens/pattern_detail_screen.dart';
 
@@ -13,7 +14,7 @@ class PatternsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text('learn.patterns'.tr())),
       body: ListView.separated(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, kAppShellContentBottomInset),
         itemCount: itfPatterns.length,
         separatorBuilder: (_, _) => const SizedBox(height: 8),
         itemBuilder: (context, i) {

@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/widgets/app_shell.dart';
 
 class FiveTenetsPage extends StatelessWidget {
   const FiveTenetsPage({super.key});
@@ -16,7 +17,7 @@ class FiveTenetsPage extends StatelessWidget {
             _buildTopBar(context),
             Expanded(
               child: ListView.separated(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, kAppShellContentBottomInset),
                 itemCount: _tenets.length,
                 separatorBuilder: (_, _) => const SizedBox(height: 10),
                 itemBuilder: (context, i) => _TenetCard(tenet: _tenets[i]),

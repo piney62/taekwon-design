@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/widgets/app_shell.dart';
 
 class TerminologyPage extends StatefulWidget {
   const TerminologyPage({super.key});
@@ -160,7 +161,7 @@ class _TerminologyPageState extends State<TerminologyPage> {
       );
     }
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, kAppShellContentBottomInset),
       itemCount: items.length,
       separatorBuilder: (_, _) => const SizedBox(height: 8),
       itemBuilder: (context, i) => _TermCard(term: items[i]),
