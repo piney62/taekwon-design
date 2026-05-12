@@ -57,6 +57,9 @@ dependencies:
   # Fonts
   google_fonts: ^6.2.1
 
+  # Icons (Lucide line icons — used by tul_* shared widgets)
+  lucide_icons: ^0.257.0
+
   # Utilities
   collection: ^1.18.0
   vector_math: ^2.1.4
