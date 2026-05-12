@@ -1,8 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../shared/widgets/grad_header_text.dart';
+import 'package:lucide_icons/lucide_icons.dart';
+import '../../../../core/theme/tul_gradients.dart';
+import '../../../../core/theme/tul_palette.dart';
+import '../../../../core/theme/tul_radius.dart';
+import '../../../../shared/widgets/tul_app_bar.dart';
 import '../../application/providers.dart';
 import '../widgets/composer_bar.dart';
 import '../widgets/message_bubble.dart';
@@ -42,6 +45,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     final coachState = ref.watch(coachControllerProvider);
 
     ref.listen(coachControllerProvider, (prev, next) {
@@ -49,14 +53,21 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
     });
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: palette.stage,
       body: SafeArea(
         child: Column(
           children: [
-            _TopBar(
-              hasMessages: coachState.messages.isNotEmpty,
-              onClear: () =>
-                  ref.read(coachControllerProvider.notifier).clear(),
+            TulAppBar(
+              title: 'coach.title'.tr(),
+              onBack: Navigator.canPop(context)
+                  ? () => Navigator.pop(context)
+                  : null,
+              action: coachState.messages.isNotEmpty
+                  ? _ClearChip(
+                      onClear: () =>
+                          ref.read(coachControllerProvider.notifier).clear(),
+                    )
+                  : null,
             ),
             Expanded(
               child: coachState.messages.isEmpty
@@ -99,54 +110,35 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
   }
 }
 
-// ── Top bar ────────────────────────────────────────────────────────────────────
+// ── Clear chip ──────────────────────────────────────────────────────────────────
 
-class _TopBar extends StatelessWidget {
-  const _TopBar({required this.hasMessages, required this.onClear});
+class _ClearChip extends StatelessWidget {
+  const _ClearChip({required this.onClear});
 
-  final bool hasMessages;
   final VoidCallback onClear;
 
   @override
   Widget build(BuildContext context) {
-    final canPop = Navigator.canPop(context);
-    return Container(
-      height: 56,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        border: Border(bottom: BorderSide(color: AppColors.border)),
-      ),
-      child: Row(
-        children: [
-          if (canPop)
-            IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.chevron_left, size: 28),
-              color: AppColors.text,
-            )
-          else
-            const SizedBox(width: 8),
-          GradHeaderText('coach.title'.tr(), fontSize: 20),
-          const Spacer(),
-          if (hasMessages)
-            IconButton(
-              tooltip: 'coach.clearChat'.tr(),
-              onPressed: onClear,
-              icon: Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: const Icon(Icons.delete_sweep_outlined,
-                    size: 18, color: AppColors.textMuted),
-              ),
-              padding: EdgeInsets.zero,
+    final palette = context.tul;
+    return Tooltip(
+      message: 'coach.clearChat'.tr(),
+      child: Material(
+        color: palette.card,
+        borderRadius: TulRadius.brMd,
+        child: InkWell(
+          onTap: onClear,
+          borderRadius: TulRadius.brMd,
+          child: Container(
+            width: 40,
+            height: 40,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: TulRadius.brMd,
+              border: Border.all(color: palette.border),
             ),
-        ],
+            child: Icon(LucideIcons.trash2, size: 16, color: palette.text2),
+          ),
+        ),
       ),
     );
   }
@@ -160,6 +152,7 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     return Column(
       children: [
         Expanded(
@@ -173,21 +166,21 @@ class _EmptyState extends StatelessWidget {
                     width: 72,
                     height: 72,
                     decoration: BoxDecoration(
-                      gradient: AppColors.gradSoft,
+                      gradient: TulGradients.brandSoft,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                          color: AppColors.primary.withValues(alpha: 0.2)),
+                          color: palette.primary.withValues(alpha: 0.2)),
                     ),
-                    child: const Icon(Icons.chat_rounded,
-                        size: 34, color: AppColors.primary),
+                    child: Icon(Icons.chat_rounded,
+                        size: 34, color: palette.primary),
                   ),
                   const SizedBox(height: 20),
                   Text(
                     'coach.welcomeMessage'.tr(),
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
-                      color: AppColors.textMuted,
+                      color: palette.text2,
                       height: 1.55,
                     ),
                   ),
@@ -210,6 +203,7 @@ class _TypingIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8, right: 48),
       child: Row(
@@ -219,24 +213,24 @@ class _TypingIndicator extends StatelessWidget {
             padding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: palette.card,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(16),
                 topRight: Radius.circular(16),
                 bottomRight: Radius.circular(16),
                 bottomLeft: Radius.circular(4),
               ),
-              border: Border.all(color: AppColors.border),
+              border: Border.all(color: palette.border),
             ),
-            child: const SizedBox(
+            child: SizedBox(
               width: 32,
               height: 14,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _Dot(),
-                  _Dot(),
-                  _Dot(),
+                  _Dot(color: palette.text3),
+                  _Dot(color: palette.text3),
+                  _Dot(color: palette.text3),
                 ],
               ),
             ),
@@ -248,15 +242,16 @@ class _TypingIndicator extends StatelessWidget {
 }
 
 class _Dot extends StatelessWidget {
-  const _Dot();
+  const _Dot({required this.color});
+
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: 6,
       height: 6,
-      decoration: const BoxDecoration(
-          color: AppColors.textDisabled, shape: BoxShape.circle),
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
     );
   }
 }
@@ -271,25 +266,25 @@ class _ErrorBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     return Container(
       width: double.infinity,
-      color: AppColors.primaryDeep.withValues(alpha: 0.3),
+      color: palette.primary.withValues(alpha: 0.15),
       padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
       child: Row(
         children: [
-          const Icon(Icons.error_outline, color: AppColors.primaryLight),
+          Icon(Icons.error_outline, color: palette.primary),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               message,
-              style: const TextStyle(
-                  fontSize: 13, color: AppColors.text),
+              style: TextStyle(fontSize: 13, color: palette.text),
             ),
           ),
           IconButton(
             icon: const Icon(Icons.close, size: 18),
             onPressed: onDismiss,
-            color: AppColors.textMuted,
+            color: palette.text2,
           ),
         ],
       ),

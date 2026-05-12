@@ -1,7 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/tul_gradients.dart';
+import '../../../../core/theme/tul_palette.dart';
 import '../../domain/entities/chat_message.dart';
 import '../../domain/entities/chat_role.dart';
 
@@ -38,7 +39,8 @@ class _MessageBubbleState extends State<MessageBubble> {
               Navigator.pop(ctx);
               widget.onDeletePair!();
             },
-            style: TextButton.styleFrom(foregroundColor: AppColors.primary),
+            style: TextButton.styleFrom(
+                foregroundColor: context.tul.primary),
             child: Text('journal.delete'.tr()),
           ),
         ],
@@ -48,15 +50,16 @@ class _MessageBubbleState extends State<MessageBubble> {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     final isUser = widget.message.role == ChatRole.user;
 
-    final userRadius = const BorderRadius.only(
+    const userRadius = BorderRadius.only(
       topLeft: Radius.circular(18),
       topRight: Radius.circular(18),
       bottomLeft: Radius.circular(18),
       bottomRight: Radius.circular(4),
     );
-    final aiRadius = const BorderRadius.only(
+    const aiRadius = BorderRadius.only(
       topLeft: Radius.circular(18),
       topRight: Radius.circular(18),
       bottomLeft: Radius.circular(4),
@@ -69,13 +72,14 @@ class _MessageBubbleState extends State<MessageBubble> {
         onLongPress: widget.onDeletePair == null ? null : _confirmDelete,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            gradient: AppColors.gradMain,
+          decoration: const BoxDecoration(
+            gradient: TulGradients.brand,
             borderRadius: userRadius,
           ),
           child: Text(
             widget.message.content,
-            style: const TextStyle(color: Colors.white, fontSize: 14, height: 1.45),
+            style: const TextStyle(
+                color: Colors.white, fontSize: 14, height: 1.45),
           ),
         ),
       );
@@ -85,14 +89,14 @@ class _MessageBubbleState extends State<MessageBubble> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: palette.card,
             borderRadius: aiRadius,
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: palette.border),
           ),
           child: Text(
             widget.message.content,
-            style: const TextStyle(
-                color: AppColors.text, fontSize: 14, height: 1.45),
+            style: TextStyle(
+                color: palette.text, fontSize: 14, height: 1.45),
           ),
         ),
       );
@@ -106,7 +110,7 @@ class _MessageBubbleState extends State<MessageBubble> {
             child: IconButton(
               onPressed: _confirmDelete,
               icon: const Icon(Icons.delete_outline, size: 18),
-              color: AppColors.textDisabled,
+              color: palette.text3,
               tooltip: 'coach.deletePairTooltip'.tr(),
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(minWidth: 28, minHeight: 28),

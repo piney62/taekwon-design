@@ -1,7 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/tul_gradients.dart';
+import '../../../../core/theme/tul_palette.dart';
+import '../../../../core/theme/tul_radius.dart';
 
 class ComposerBar extends StatefulWidget {
   const ComposerBar({
@@ -35,10 +38,11 @@ class _ComposerBarState extends State<ComposerBar> {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.background,
-        border: Border(top: BorderSide(color: AppColors.border)),
+        color: palette.bg,
+        border: Border(top: BorderSide(color: palette.border)),
       ),
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
       child: SafeArea(
@@ -48,9 +52,9 @@ class _ComposerBarState extends State<ComposerBar> {
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppColors.border),
+                  color: palette.card,
+                  borderRadius: TulRadius.brLg,
+                  border: Border.all(color: palette.border),
                 ),
                 child: TextField(
                   controller: _controller,
@@ -59,12 +63,11 @@ class _ComposerBarState extends State<ComposerBar> {
                   maxLines: 4,
                   textInputAction: TextInputAction.send,
                   onSubmitted: (_) => _submit(),
-                  style: const TextStyle(
-                      color: AppColors.text, fontSize: 14),
+                  style: TextStyle(color: palette.text, fontSize: 14),
                   decoration: InputDecoration(
                     hintText: 'coach.inputHint'.tr(),
-                    hintStyle: const TextStyle(
-                        color: AppColors.textDisabled, fontSize: 14),
+                    hintStyle:
+                        TextStyle(color: palette.text3, fontSize: 14),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 12),
@@ -79,15 +82,14 @@ class _ComposerBarState extends State<ComposerBar> {
                 duration: const Duration(milliseconds: 150),
                 width: 48,
                 height: 48,
+                alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  gradient: widget.enabled
-                      ? AppColors.gradMain
-                      : null,
-                  color: widget.enabled ? null : AppColors.muted,
-                  borderRadius: BorderRadius.circular(14),
+                  gradient: widget.enabled ? TulGradients.brand : null,
+                  color: widget.enabled ? null : palette.muted,
+                  borderRadius: TulRadius.brLg,
                 ),
-                child: const Icon(Icons.send_rounded,
-                    size: 20, color: Colors.white),
+                child: const Icon(LucideIcons.send,
+                    size: 18, color: Colors.white),
               ),
             ),
           ],

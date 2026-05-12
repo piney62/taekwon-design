@@ -1,7 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/tul_palette.dart';
+import '../../../../core/theme/tul_radius.dart';
+import '../../../../core/theme/tul_text_styles.dart';
 
 class QuickQuestions extends StatelessWidget {
   const QuickQuestions({super.key, required this.onTap});
@@ -17,6 +19,7 @@ class QuickQuestions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.tul;
     return SizedBox(
       height: 40,
       child: ListView.separated(
@@ -26,22 +29,23 @@ class QuickQuestions extends StatelessWidget {
         separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, i) {
           final label = _keys[i].tr();
-          return GestureDetector(
-            onTap: () => onTap(label),
-            child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.border),
-              ),
-              child: Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textMuted,
-                  fontWeight: FontWeight.w500,
+          return Material(
+            color: palette.card,
+            borderRadius: TulRadius.brMd,
+            child: InkWell(
+              onTap: () => onTap(label),
+              borderRadius: TulRadius.brMd,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  borderRadius: TulRadius.brMd,
+                  border: Border.all(color: palette.border),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  label,
+                  style: TulTextStyles.small(color: palette.text2),
                 ),
               ),
             ),
