@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/app_shell.dart';
 import '../../../../shared/widgets/grad_header_text.dart';
+import '../../../../shared/widgets/tul_card.dart';
 import '../../application/weakness_provider.dart';
 import '../../domain/entities/weakness_pattern.dart';
 
@@ -231,10 +232,9 @@ class _WeaknessCard extends StatelessWidget {
             ? AppColors.warning
             : AppColors.info;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: TulCard.compact(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/app_shell.dart';
+import '../../../../shared/widgets/tul_buttons.dart';
+import '../../../../shared/widgets/tul_card.dart';
 import '../../../auth/application/providers.dart';
 import '../../../settings/application/providers.dart';
 import '../../application/readiness_provider.dart';
@@ -56,37 +58,39 @@ class ReadinessDetailScreen extends ConsumerWidget {
             padding: EdgeInsets.zero,
             children: [
               // ── TopBar
-              Container(
-                color: AppColors.stage,
-                padding: const EdgeInsets.fromLTRB(16, 52, 16, 16),
-                child: Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AppColors.border),
+              SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                  child: Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppColors.border),
+                          ),
+                          child: Icon(Icons.chevron_left_rounded,
+                              color: AppColors.text, size: 20),
                         ),
-                        child: Icon(Icons.chevron_left_rounded,
-                            color: AppColors.text, size: 20),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      'journal.readinessDetail'.tr(),
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.w700),
-                    ),
-                  ],
+                      const SizedBox(width: 12),
+                      Text(
+                        'journal.readinessDetail'.tr(),
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                  ),
                 ),
               ),
 
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 32, 20, kAppShellContentBottomInset),
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, kAppShellContentBottomInset),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -525,14 +529,9 @@ class _CheckCard extends StatelessWidget {
       );
     }
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-      ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: TulCard.compact(
       child: Row(
         children: [
           iconWidget,
@@ -585,6 +584,7 @@ class _CheckCard extends StatelessWidget {
             ),
           ],
         ],
+      ),
       ),
     );
   }
@@ -712,29 +712,10 @@ class _GradientTheoryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 54,
-        decoration: BoxDecoration(
-          gradient: AppColors.gradMain,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.bolt_rounded, color: Colors.white, size: 18),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white),
-            ),
-          ],
-        ),
-      ),
+    return TulPrimaryButton(
+      label: label,
+      icon: Icons.bolt_rounded,
+      onPressed: onTap,
     );
   }
 }

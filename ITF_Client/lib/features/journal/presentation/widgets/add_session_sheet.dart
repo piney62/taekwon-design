@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/backend_client.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/widgets/tul_buttons.dart';
+import '../../../../shared/widgets/tul_modal_sheet.dart';
 import '../../domain/entities/training_session.dart';
 import '../../domain/entities/training_type.dart';
 
@@ -146,48 +148,40 @@ class _AddSessionSheetState extends ConsumerState<AddSessionSheet> {
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Drag handle
-          Container(
-            margin: const EdgeInsets.symmetric(vertical: 8),
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade300,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-
-          // Title row
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
+      child: TulModalSheet(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Title row
+            Row(
               children: [
-                Text(
-                  _isEdit
-                      ? 'journal.editSession'.tr()
-                      : 'journal.addSession'.tr(),
-                  style: Theme.of(context).textTheme.titleLarge,
+                Expanded(
+                  child: Text(
+                    _isEdit
+                        ? 'journal.editSession'.tr()
+                        : 'journal.addSession'.tr(),
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
                 ),
-                const Spacer(),
                 IconButton(
                   icon: const Icon(Icons.close),
+                  padding: EdgeInsets.zero,
+                  visualDensity: VisualDensity.compact,
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
             ),
-          ),
+            const SizedBox(height: 12),
 
-          // Scrollable form
-          ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.72,
-            ),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
-              child: Column(
+            // Scrollable form
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.60,
+              ),
+              child: SingleChildScrollView(
+                padding: EdgeInsets.zero,
+                child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Date
@@ -420,38 +414,34 @@ class _AddSessionSheetState extends ConsumerState<AddSessionSheet> {
             ),
           ),
 
-          // Save button
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  final existing = widget.existing;
-                  final selectedMovs = isPattern
-                      ? (_selectedMovements.toList()..sort())
-                      : <int>[];
-                  final session = TrainingSession(
-                    id: existing?.id ?? TrainingSession.generateId(),
-                    date: _date,
-                    durationMinutes:
-                        int.tryParse(_durationController.text) ?? _duration,
-                    type: _type,
-                    score: _score,
-                    notes: _notesController.text.trim(),
-                    isAutoSaved: existing?.isAutoSaved ?? false,
-                    instructorComment: existing?.instructorComment ?? '',
-                    patternName: isPattern ? _patternName : '',
-                    selectedMovements: selectedMovs,
-                  );
-                  Navigator.pop(context, session);
-                },
-                child: Text(
-                    _isEdit ? 'journal.update'.tr() : 'journal.save'.tr()),
-              ),
+            const SizedBox(height: 8),
+
+            // Save button
+            TulPrimaryButton(
+              label: _isEdit ? 'journal.update'.tr() : 'journal.save'.tr(),
+              onPressed: () {
+                final existing = widget.existing;
+                final selectedMovs = isPattern
+                    ? (_selectedMovements.toList()..sort())
+                    : <int>[];
+                final session = TrainingSession(
+                  id: existing?.id ?? TrainingSession.generateId(),
+                  date: _date,
+                  durationMinutes:
+                      int.tryParse(_durationController.text) ?? _duration,
+                  type: _type,
+                  score: _score,
+                  notes: _notesController.text.trim(),
+                  isAutoSaved: existing?.isAutoSaved ?? false,
+                  instructorComment: existing?.instructorComment ?? '',
+                  patternName: isPattern ? _patternName : '',
+                  selectedMovements: selectedMovs,
+                );
+                Navigator.pop(context, session);
+              },
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

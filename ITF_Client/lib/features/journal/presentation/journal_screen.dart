@@ -6,8 +6,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/backend_client.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/tul_text_styles.dart';
 import '../../../shared/widgets/app_shell.dart' show kAppShellContentBottomInset;
+import '../../../shared/widgets/badge.dart';
 import '../../../shared/widgets/grad_header_text.dart';
+import '../../../shared/widgets/list_row.dart';
+import '../../../shared/widgets/stat_card.dart';
+import '../../../shared/widgets/tul_buttons.dart';
+import '../../../shared/widgets/tul_card.dart';
+import '../../../shared/widgets/tul_modal_sheet.dart';
 import '../../auth/application/providers.dart';
 import '../../settings/application/providers.dart';
 import '../../settings/domain/entities/belt_level.dart';
@@ -186,49 +193,21 @@ class JournalScreen extends ConsumerWidget {
     final title = 'journal.daySessionsTitle'.tr(
         namedArgs: {'date': dateFmt, 'count': daySessions.length.toString()});
 
-    showModalBottomSheet<void>(
+    TulModalSheet.show<void>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) => DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.5,
-        minChildSize: 0.3,
-        maxChildSize: 0.85,
-        builder: (_, controller) => Column(
-          children: [
-            const SizedBox(height: 8),
-            Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.border,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 14, 20, 4),
-              child: Text(title,
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w700)),
-            ),
-            Divider(color: AppColors.border),
-            Expanded(
-              child: ListView(
-                controller: controller,
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
-                children: daySessions
-                    .map((s) => Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: _RecordCard(session: s),
-                        ))
-                    .toList(),
-              ),
-            ),
-          ],
+      title: title,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.55,
+        ),
+        child: ListView(
+          padding: const EdgeInsets.only(top: 4, bottom: 8),
+          children: daySessions
+              .map((s) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: _RecordCard(session: s),
+                  ))
+              .toList(),
         ),
       ),
     );
@@ -268,30 +247,10 @@ class _Header extends StatelessWidget {
           ),
         ),
         if (isDojo && instructorName.isNotEmpty)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppColors.secondary.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                  color: AppColors.secondary.withValues(alpha: 0.4)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.school_rounded,
-                    size: 12, color: AppColors.secondary),
-                const SizedBox(width: 5),
-                Text(
-                  instructorName,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.secondary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
+          TulBadge(
+            label: instructorName,
+            color: TulBadgeColor.blue,
+            icon: Icons.school_rounded,
           ),
       ],
     );
@@ -319,32 +278,31 @@ class _StatsStrip extends ConsumerWidget {
 
     return Row(
       children: [
-        _StatChip(
-          icon: Icons.local_fire_department_rounded,
-          iconColor: AppColors.primary,
-          value: '$streak',
-          label: 'journal.streakUnit'.tr(),
-          sub: 'journal.streak'.tr(),
+        Expanded(
+          child: StatCard(
+            icon: Icons.local_fire_department_rounded,
+            value: '$streak',
+            label: 'journal.streak'.tr(),
+            color: StatCardColor.primary,
+          ),
         ),
         const SizedBox(width: 10),
-        _StatChip(
-          icon: Icons.trending_up_rounded,
-          iconColor: AppColors.secondary,
-          value: '$monthCount',
-          label: 'journal.thisMonthUnit'.tr(),
-          sub: 'journal.thisMonth'.tr(),
+        Expanded(
+          child: StatCard(
+            icon: Icons.trending_up_rounded,
+            value: '$monthCount',
+            label: 'journal.thisMonth'.tr(),
+            color: StatCardColor.secondary,
+          ),
         ),
         const SizedBox(width: 10),
-        _StatChip(
-          icon: Icons.task_alt_rounded,
-          iconColor: isDojo
-              ? (pendingCount > 0 ? AppColors.accent : AppColors.textMuted)
-              : AppColors.accent,
-          value: isDojo ? '$pendingCount' : '-',
-          label: '',
-          sub: isDojo
-              ? 'journal.pendingHomework'.tr()
-              : 'journal.pendingHomework'.tr(),
+        Expanded(
+          child: StatCard(
+            icon: Icons.task_alt_rounded,
+            value: isDojo ? '$pendingCount' : '-',
+            label: 'journal.pendingHomework'.tr(),
+            color: StatCardColor.accent,
+          ),
         ),
       ],
     );
@@ -377,67 +335,6 @@ class _StatsStrip extends ConsumerWidget {
     final now = DateTime.now();
     return s.where((x) => x.date.year == now.year && x.date.month == now.month)
         .length;
-  }
-}
-
-class _StatChip extends StatelessWidget {
-  const _StatChip({
-    required this.icon,
-    required this.iconColor,
-    required this.value,
-    required this.label,
-    required this.sub,
-  });
-
-  final IconData icon;
-  final Color iconColor;
-  final String value;
-  final String label;
-  final String sub;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: iconColor.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(9),
-              ),
-              child: Icon(icon, color: iconColor, size: 17),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              label.isEmpty ? value : '$value $label',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                color: Colors.white,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 2),
-            Text(
-              sub,
-              style: TextStyle(fontSize: 11, color: AppColors.textMuted),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
 
@@ -512,13 +409,7 @@ class _HomeworkCard extends ConsumerWidget {
         if (list.isEmpty) return const SizedBox.shrink();
         return Padding(
           padding: const EdgeInsets.only(bottom: 16),
-          child: Container(
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: AppColors.border),
-            ),
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+          child: TulCard.compact(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -526,25 +417,13 @@ class _HomeworkCard extends ConsumerWidget {
                   children: [
                     Text(
                       'journal.sabumHomework'.tr(),
-                      style: const TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.w700),
+                      style: TulTextStyles.cardHeader(color: AppColors.text),
                     ),
                     const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: AppColors.muted,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        'journal.tasksCountFmt'
-                            .tr(namedArgs: {'count': list.length.toString()}),
-                        style: TextStyle(
-                            fontSize: 11,
-                            color: AppColors.textMuted,
-                            fontWeight: FontWeight.w600),
-                      ),
+                    TulBadge(
+                      label: 'journal.tasksCountFmt'
+                          .tr(namedArgs: {'count': list.length.toString()}),
+                      color: TulBadgeColor.muted,
                     ),
                   ],
                 ),
@@ -737,81 +616,74 @@ class _BeltProgressCard extends ConsumerWidget {
       {required int pct, required int passed, required int total}) {
     final nextBeltStr = _nextBeltLabel(beltLevel);
 
-    return GestureDetector(
+    return TulCard(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: Row(
-          children: [
-            SizedBox(
-              width: 80,
-              height: 80,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  CustomPaint(
-                    size: const Size(80, 80),
-                    painter: _MiniRingPainter(pct: pct / 100),
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 80,
+            height: 80,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                CustomPaint(
+                  size: const Size(80, 80),
+                  painter: _MiniRingPainter(pct: pct / 100),
+                ),
+                Text(
+                  '$pct%',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
                   ),
-                  Text(
-                    '$pct%',
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'journal.nextBelt'.tr(),
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textMuted,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                ShaderMask(
+                  shaderCallback: (b) =>
+                      AppColors.gradMain.createShader(b),
+                  child: Text(
+                    '${beltLevel.i18nKey.tr()} → $nextBeltStr',
                     style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
                       color: Colors.white,
                     ),
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'journal.criteriaMetFmt'.tr(namedArgs: {
+                    'passed': '$passed',
+                    'total': '$total',
+                  }),
+                  style: TextStyle(
+                      fontSize: 12, color: AppColors.textMuted),
+                ),
+              ],
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'journal.nextBelt'.tr(),
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textMuted,
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  ShaderMask(
-                    shaderCallback: (b) =>
-                        AppColors.gradMain.createShader(b),
-                    child: Text(
-                      '${beltLevel.i18nKey.tr()} → $nextBeltStr',
-                      style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'journal.criteriaMetFmt'.tr(namedArgs: {
-                      'passed': '$passed',
-                      'total': '$total',
-                    }),
-                    style: TextStyle(
-                        fontSize: 12, color: AppColors.textMuted),
-                  ),
-                ],
-              ),
-            ),
-            Icon(Icons.chevron_right_rounded,
-                color: AppColors.textMuted, size: 20),
-          ],
-        ),
+          ),
+          Icon(Icons.chevron_right_rounded,
+              color: AppColors.textMuted, size: 20),
+        ],
       ),
     );
   }
@@ -934,20 +806,13 @@ class _WeakPointsCard extends ConsumerWidget {
       error: (e, st) => const SizedBox.shrink(),
       data: (list) {
         final top = list.take(3).toList();
-        return GestureDetector(
+        return TulCard(
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute<void>(
               builder: (_) => const WeaknessDetailScreen(),
             ),
           ),
-          child: Container(
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: AppColors.border),
-          ),
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -955,8 +820,7 @@ class _WeakPointsCard extends ConsumerWidget {
                 children: [
                   Text(
                     'journal.weakPoints'.tr(),
-                    style: const TextStyle(
-                        fontSize: 15, fontWeight: FontWeight.w700),
+                    style: TulTextStyles.cardHeader(color: AppColors.text),
                   ),
                   const Spacer(),
                   Icon(Icons.chevron_right_rounded,
@@ -1021,7 +885,6 @@ class _WeakPointsCard extends ConsumerWidget {
                 }),
             ],
           ),
-          ),
         );
       },
     );
@@ -1044,13 +907,8 @@ class _CalendarCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return TulCard(
       padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
-      ),
       child: TrainingCalendar(
         sessions: sessions,
         showNavigation: true,
@@ -1068,31 +926,10 @@ class _AddTrainingButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          gradient: AppColors.gradMain,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.add_rounded, color: Colors.white, size: 20),
-            const SizedBox(width: 8),
-            Text(
-              'journal.addSession'.tr(),
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-          ],
-        ),
-      ),
+    return TulSecondaryButton(
+      label: 'journal.addSession'.tr(),
+      icon: Icons.add_rounded,
+      onPressed: onTap,
     );
   }
 }
@@ -1110,19 +947,11 @@ class _SectionHeader extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title,
-            style: const TextStyle(
-                fontSize: 15, fontWeight: FontWeight.w700)),
-        GestureDetector(
-          onTap: onViewAll,
-          child: Text(
-            'journal.viewAll'.tr(),
-            style: TextStyle(
-              fontSize: 13,
-              color: AppColors.primary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+        Text(title, style: TulTextStyles.cardHeader(color: AppColors.text)),
+        TulGhostButton(
+          label: 'journal.viewAll'.tr(),
+          onPressed: onViewAll,
+          color: AppColors.primary,
         ),
       ],
     );
@@ -1140,7 +969,7 @@ class _RecordCard extends StatelessWidget {
     final color = _typeColor(session.type);
     final score = (session.score * 20).clamp(0, 100);
 
-    String title = session.patternName.isNotEmpty
+    final title = session.patternName.isNotEmpty
         ? session.patternName
         : session.type.i18nKey.tr();
 
@@ -1150,55 +979,17 @@ class _RecordCard extends StatelessWidget {
           '${'journal.movementsFmt'.tr(namedArgs: {'count': ''}).trim()}';
     }
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(14, 13, 14, 13),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(_typeIcon(session.type), color: color, size: 22),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                      fontSize: 13, fontWeight: FontWeight.w600),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                      fontSize: 11, color: AppColors.textMuted),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            '$score%',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: color,
-            ),
-          ),
-        ],
+    return TulCard(
+      padding: EdgeInsets.zero,
+      child: ListRow(
+        icon: _typeIcon(session.type),
+        iconColor: _typeListRowColor(session.type),
+        title: title,
+        sub: subtitle,
+        trailing: Text(
+          '$score%',
+          style: TulTextStyles.bodyStrong(color: color),
+        ),
       ),
     );
   }
@@ -1210,6 +1001,15 @@ class _RecordCard extends StatelessWidget {
         TrainingType.punches  => AppColors.primary,
         TrainingType.fitness  => AppColors.secondary,
         TrainingType.other    => AppColors.accent,
+      };
+
+  static ListRowColor _typeListRowColor(TrainingType t) => switch (t) {
+        TrainingType.pattern  => ListRowColor.primary,
+        TrainingType.sparring => ListRowColor.secondary,
+        TrainingType.kicks    => ListRowColor.accent,
+        TrainingType.punches  => ListRowColor.primary,
+        TrainingType.fitness  => ListRowColor.secondary,
+        TrainingType.other    => ListRowColor.accent,
       };
 
   static IconData _typeIcon(TrainingType t) => switch (t) {
@@ -1230,26 +1030,19 @@ class _EmptyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return TulCard(
+      padding: const EdgeInsets.all(28),
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(28),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: Column(
-          children: [
-            Icon(Icons.book_outlined, color: AppColors.textMuted, size: 36),
-            const SizedBox(height: 10),
-            Text(
-              'journal.noSessionsYet'.tr(),
-              style: TextStyle(fontSize: 14, color: AppColors.textMuted),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
+      child: Column(
+        children: [
+          Icon(Icons.book_outlined, color: AppColors.textMuted, size: 36),
+          const SizedBox(height: 10),
+          Text(
+            'journal.noSessionsYet'.tr(),
+            style: TextStyle(fontSize: 14, color: AppColors.textMuted),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
@@ -1279,187 +1072,183 @@ class _WeeklyGoalCard extends ConsumerWidget {
             ? AppColors.warning
             : AppColors.primary;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ── Header row ──────────────────────────────────────────────
-          Row(
-            children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: progressColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(Icons.flag_rounded, color: progressColor, size: 17),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  'journal.weeklyGoalTitle'.tr(),
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleSmall
-                      ?.copyWith(fontWeight: FontWeight.w700),
-                ),
-              ),
-              GestureDetector(
-                onTap: () => _openSetup(context, ref, progress),
-                child: Row(
-                  children: [
-                    Text(
-                      'journal.weeklyGoalSet'.tr(),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                    ),
-                    const Icon(Icons.chevron_right_rounded,
-                        color: AppColors.primary, size: 16),
-                  ],
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 12),
-
-          // ── Count + progress bar ─────────────────────────────────────
-          Row(
-            children: [
-              Text(
-                '${progress.thisWeekCount} / ${progress.target}',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: progressColor,
-                    ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'journal.weeklyGoalUnit'.tr(),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: progress.progressRatio,
-              minHeight: 6,
-              backgroundColor: AppColors.muted,
-              valueColor: AlwaysStoppedAnimation<Color>(progressColor),
-            ),
-          ),
-          const SizedBox(height: 10),
-
-          // ── Streak + days left ───────────────────────────────────────
-          Row(
-            children: [
-              if (progress.streak > 0) ...[
-                const Text('🔥', style: TextStyle(fontSize: 13)),
-                const SizedBox(width: 3),
-                Text(
-                  'journal.weeklyGoalStreak'
-                      .tr(namedArgs: {'n': progress.streak.toString()}),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.warning,
-                        fontWeight: FontWeight.w600,
-                      ),
-                ),
-                const SizedBox(width: 12),
-              ],
-              Icon(Icons.schedule_rounded,
-                  size: 13, color: AppColors.textSecondary),
-              const SizedBox(width: 3),
-              Text(
-                'journal.weeklyGoalDaysLeft'
-                    .tr(namedArgs: {'n': progress.daysLeft.toString()}),
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: AppColors.textSecondary),
-              ),
-              if (progress.goalMet) ...[
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: AppColors.success.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    'journal.weeklyGoalDone'.tr(),
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: AppColors.success,
-                          fontWeight: FontWeight.w600,
-                        ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-
-          // ── Focus pattern ────────────────────────────────────────────
-          if (progress.focusPattern != null) ...[
-            const SizedBox(height: 8),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: TulCard.compact(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Header row ──────────────────────────────────────────────
             Row(
               children: [
-                const Icon(Icons.sports_martial_arts_rounded,
-                    size: 13, color: AppColors.textSecondary),
-                const SizedBox(width: 4),
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: progressColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(Icons.flag_rounded, color: progressColor, size: 17),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'journal.weeklyGoalTitle'.tr(),
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => _openSetup(context, ref, progress),
+                  child: Row(
+                    children: [
+                      Text(
+                        'journal.weeklyGoalSet'.tr(),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                      const Icon(Icons.chevron_right_rounded,
+                          color: AppColors.primary, size: 16),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 12),
+
+            // ── Count + progress bar ─────────────────────────────────────
+            Row(
+              children: [
                 Text(
-                  'journal.weeklyGoalFocus'.tr(),
+                  '${progress.thisWeekCount} / ${progress.target}',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: progressColor,
+                      ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'journal.weeklyGoalUnit'.tr(),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textSecondary,
                       ),
                 ),
-                const SizedBox(width: 6),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: (progress.focusPatternCompleted
-                            ? AppColors.success
-                            : AppColors.accent)
-                        .withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    progress.focusPattern!,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: progress.focusPatternCompleted
-                              ? AppColors.success
-                              : AppColors.accent,
+              ],
+            ),
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: progress.progressRatio,
+                minHeight: 6,
+                backgroundColor: AppColors.muted,
+                valueColor: AlwaysStoppedAnimation<Color>(progressColor),
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            // ── Streak + days left ───────────────────────────────────────
+            Row(
+              children: [
+                if (progress.streak > 0) ...[
+                  const Text('🔥', style: TextStyle(fontSize: 13)),
+                  const SizedBox(width: 3),
+                  Text(
+                    'journal.weeklyGoalStreak'
+                        .tr(namedArgs: {'n': progress.streak.toString()}),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.warning,
                           fontWeight: FontWeight.w600,
                         ),
                   ),
-                ),
-                const SizedBox(width: 6),
+                  const SizedBox(width: 12),
+                ],
+                Icon(Icons.schedule_rounded,
+                    size: 13, color: AppColors.textSecondary),
+                const SizedBox(width: 3),
                 Text(
-                  progress.focusPatternCompleted
-                      ? 'journal.weeklyGoalFocusDone'.tr()
-                      : 'journal.weeklyGoalFocusPending'.tr(),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: progress.focusPatternCompleted
-                            ? AppColors.success
-                            : AppColors.textSecondary,
-                      ),
+                  'journal.weeklyGoalDaysLeft'
+                      .tr(namedArgs: {'n': progress.daysLeft.toString()}),
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: AppColors.textSecondary),
                 ),
+                if (progress.goalMet) ...[
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.success.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'journal.weeklyGoalDone'.tr(),
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: AppColors.success,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                  ),
+                ],
               ],
             ),
+
+            // ── Focus pattern ────────────────────────────────────────────
+            if (progress.focusPattern != null) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.sports_martial_arts_rounded,
+                      size: 13, color: AppColors.textSecondary),
+                  const SizedBox(width: 4),
+                  Text(
+                    'journal.weeklyGoalFocus'.tr(),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                  ),
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: (progress.focusPatternCompleted
+                              ? AppColors.success
+                              : AppColors.accent)
+                          .withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      progress.focusPattern!,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: progress.focusPatternCompleted
+                                ? AppColors.success
+                                : AppColors.accent,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    progress.focusPatternCompleted
+                        ? 'journal.weeklyGoalFocusDone'.tr()
+                        : 'journal.weeklyGoalFocusPending'.tr(),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: progress.focusPatternCompleted
+                              ? AppColors.success
+                              : AppColors.textSecondary,
+                        ),
+                  ),
+                ],
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -1613,21 +1402,12 @@ class _GoalSetupSheetState extends State<_GoalSetupSheet> {
               ),
               const SizedBox(height: 24),
 
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                  ),
-                  onPressed: () {
-                    widget.onSave(_target, _focus);
-                    Navigator.pop(context);
-                  },
-                  child: Text('settings.save'.tr()),
-                ),
+              TulPrimaryButton(
+                label: 'settings.save'.tr(),
+                onPressed: () {
+                  widget.onSave(_target, _focus);
+                  Navigator.pop(context);
+                },
               ),
             ],
           ),

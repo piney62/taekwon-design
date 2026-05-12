@@ -2,6 +2,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/widgets/badge.dart';
+import '../../../../shared/widgets/tul_card.dart';
 import '../../domain/entities/training_session.dart';
 import '../../domain/entities/training_type.dart';
 
@@ -25,14 +27,10 @@ class SessionCard extends StatelessWidget {
             .format(session.date);
 
     final typeColor = _typeColor(session.type);
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: TulCard(
       padding: const EdgeInsets.fromLTRB(14, 13, 6, 13),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border, width: 1),
-      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -74,12 +72,14 @@ class SessionCard extends StatelessWidget {
                         ),
                       ],
                       const SizedBox(width: 6),
-                      session.isAutoSaved
-                          ? _Badge(
-                              label: 'journal.autoSavedBadge'.tr(),
-                              isAuto: true,
-                            )
-                          : _Badge(label: 'journal.manualBadge'.tr()),
+                      TulBadge(
+                        label: session.isAutoSaved
+                            ? 'journal.autoSavedBadge'.tr()
+                            : 'journal.manualBadge'.tr(),
+                        color: session.isAutoSaved
+                            ? TulBadgeColor.blue
+                            : TulBadgeColor.muted,
+                      ),
                     ],
                   ),
                   const SizedBox(height: 3),
@@ -152,6 +152,7 @@ class SessionCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
     );
   }
 
@@ -232,29 +233,3 @@ class _StarRow extends StatelessWidget {
   }
 }
 
-// ── Badge ─────────────────────────────────────────────────────────────────────
-
-class _Badge extends StatelessWidget {
-  const _Badge({required this.label, this.isAuto = false});
-  final String label;
-  final bool isAuto;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = isAuto ? AppColors.info : AppColors.textDisabled;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: color,
-              fontSize: 10,
-            ),
-      ),
-    );
-  }
-}
