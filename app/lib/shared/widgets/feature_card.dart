@@ -36,31 +36,36 @@ class FeatureCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return ClipRRect(
-      borderRadius: TulRadius.brXl4,
-      child: Stack(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              gradient: TulGradients.brand,
-              borderRadius: TulRadius.brXl4,
-              boxShadow: isDark ? TulShadows.featureDark : TulShadows.featureLight,
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: TulRadius.brXl4,
+        boxShadow: isDark ? TulShadows.featureDark : TulShadows.featureLight,
+      ),
+      child: ClipRRect(
+        borderRadius: TulRadius.brXl4,
+        child: Stack(
+          children: [
+            // Gradient fills the whole card, sized by the content below.
+            const Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(gradient: TulGradients.brand),
+              ),
             ),
-          ),
-          // Soft blurs (CSS::before / ::after)
-          Positioned(
-            top: -40,
-            right: -40,
-            child: _Blob(size: 180, color: Colors.white.withValues(alpha: 0.18)),
-          ),
-          Positioned(
-            bottom: -40,
-            left: -30,
-            child: _Blob(size: 140, color: Colors.white.withValues(alpha: 0.08)),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(22),
-            child: Column(
+            // Soft white glows (CSS::before / ::after equivalents). RadialGradient
+            // gives a true fading bloom instead of a hard-edged disc.
+            Positioned(
+              top: -40,
+              right: -40,
+              child: _Bloom(size: 200, intensity: 0.22),
+            ),
+            Positioned(
+              bottom: -40,
+              left: -30,
+              child: _Bloom(size: 160, intensity: 0.10),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(22),
+              child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -139,18 +144,21 @@ class FeatureCard extends StatelessWidget {
                 ],
               ],
             ),
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _Blob extends StatelessWidget {
-  const _Blob({required this.size, required this.color});
+/// Soft radial bloom — white center fading to fully transparent.
+/// Mimics a Gaussian blur disc without needing a backdrop filter.
+class _Bloom extends StatelessWidget {
+  const _Bloom({required this.size, required this.intensity});
 
   final double size;
-  final Color color;
+  final double intensity;
 
   @override
   Widget build(BuildContext context) {
@@ -159,8 +167,14 @@ class _Blob extends StatelessWidget {
         width: size,
         height: size,
         decoration: BoxDecoration(
-          color: color,
           shape: BoxShape.circle,
+          gradient: RadialGradient(
+            colors: [
+              Colors.white.withValues(alpha: intensity),
+              Colors.white.withValues(alpha: 0),
+            ],
+            stops: const [0.0, 1.0],
+          ),
         ),
       ),
     );
