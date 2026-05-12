@@ -181,7 +181,7 @@ class _AddSessionSheetState extends ConsumerState<AddSessionSheet> {
                             - MediaQuery.of(context).viewInsets.bottom) * 0.55,
               ),
               child: SingleChildScrollView(
-                padding: EdgeInsets.zero,
+                padding: const EdgeInsets.only(top: 8),
                 child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
