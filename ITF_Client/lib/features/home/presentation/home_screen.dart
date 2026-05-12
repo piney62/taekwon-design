@@ -2,10 +2,21 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/tul_gradients.dart';
+import '../../../core/theme/tul_palette.dart';
+import '../../../core/theme/tul_radius.dart';
+import '../../../core/theme/tul_text_styles.dart';
 import '../../../shared/widgets/app_shell.dart' show kAppShellContentBottomInset;
+import '../../../shared/widgets/feature_card.dart';
+import '../../../shared/widgets/gradient_text.dart';
+import '../../../shared/widgets/list_row.dart';
+import '../../../shared/widgets/stat_card.dart';
+import '../../../shared/widgets/tul_buttons.dart';
+import '../../../shared/widgets/tul_card.dart';
 import '../../auth/application/providers.dart';
 import '../../journal/application/providers.dart';
 import '../../journal/domain/entities/training_session.dart';
@@ -32,6 +43,7 @@ class HomeScreen extends ConsumerWidget {
     final streak = _calcStreak(sessions);
     final monthCount = _monthCount(sessions);
     final beltPct = _beltProgress(sessions, beltLevel);
+    final palette = context.tul;
 
     return Scaffold(
       body: RefreshIndicator(
@@ -46,145 +58,147 @@ class HomeScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // ── Header row ──────────────────────────────────
+                      // ── Header ──────────────────────────────────────────
+                      _StudentHeader(authState: authState, palette: palette),
+                      const SizedBox(height: 20),
+
+                      // ── Stat strip ──────────────────────────────────────
                       Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Brand tag
-                                Row(
-                                  children: [
-                                    Container(
-                                      width: 24,
-                                      height: 24,
-                                      decoration: BoxDecoration(
-                                        gradient: AppColors.gradMain,
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      child: const Icon(
-                                        Icons.local_fire_department,
-                                        size: 13,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      'ITF TulMaster',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.copyWith(
-                                            color: AppColors.textSecondary,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 10),
-                                Text(
-                                  'home.greeting'
-                                      .tr(namedArgs: {'name': ''}),
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headlineLarge
-                                      ?.copyWith(height: 1.1),
-                                ),
-                                ShaderMask(
-                                  shaderCallback: (b) =>
-                                      AppColors.gradMain.createShader(b),
-                                  child: Text(
-                                    authState.displayName.isEmpty
-                                        ? '—'
-                                        : authState.displayName,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headlineLarge
-                                        ?.copyWith(
-                                          color: Colors.white,
-                                          height: 1.1,
-                                        ),
-                                  ),
-                                ),
-                              ],
+                            child: StatCard(
+                              icon: LucideIcons.flame,
+                              value: '$streak',
+                              label: 'journal.streak'.tr(),
+                              color: StatCardColor.primary,
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          InkWell(
-                            onTap: () => context.push(AppRoutes.settings),
-                            borderRadius: BorderRadius.circular(14),
-                            child: Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: AppColors.surface,
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(
-                                  color: AppColors.border,
-                                  width: 1,
-                                ),
-                              ),
-                              child: const Icon(
-                                Icons.settings_outlined,
-                                size: 18,
-                                color: AppColors.textPrimary,
-                              ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: StatCard(
+                              icon: LucideIcons.target,
+                              value: '$beltPct%',
+                              label: 'home.statsTitle'.tr(),
+                              color: StatCardColor.secondary,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: StatCard(
+                              icon: LucideIcons.trendingUp,
+                              value: '$monthCount',
+                              label: 'journal.thisMonth'.tr(),
+                              color: StatCardColor.accent,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 16),
 
-                      // ── Today's Focus feature card ──────────────────
-                      _TodaysFocusCard(
-                        beltLevel: beltLevel,
-                        onStart: () => context.go(AppRoutes.poseAnalysis),
-                        onDetails: () => context.go(AppRoutes.learn),
+                      // ── Today's Focus feature card ───────────────────────
+                      FeatureCard(
+                        icon: LucideIcons.zap,
+                        label: "Today's Focus",
+                        title: _currentPattern(beltLevel),
+                        body: 'home.todayRecommendation'.tr(),
+                        progress: beltPct.toDouble(),
+                        primaryLabel: 'Start Training',
+                        secondaryLabel: 'View Details',
+                        onPrimary: () => context.go(AppRoutes.poseAnalysis),
+                        onSecondary: () => context.go(AppRoutes.learn),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 16),
 
-                      // ── Stat strip ──────────────────────────────────
-                      _StatStrip(
-                        streak: streak,
-                        beltPct: beltPct,
-                        monthCount: monthCount,
+                      // ── This week card ──────────────────────────────────
+                      TulCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'home.thisWeek'.tr(),
+                              style: TulTextStyles.cardHeader(color: palette.text),
+                            ),
+                            const SizedBox(height: 12),
+                            _WeekDots(sessions: sessions),
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 16),
 
-                      // ── This week calendar ──────────────────────────
-                      _ThisWeekGrid(sessions: sessions),
-                      const SizedBox(height: 20),
-
-                      // ── Recent sessions header ──────────────────────
-                      _SectionHeader(
-                        title: 'home.recentSessions'.tr(),
-                        onViewAll: sessions.length > 3
-                            ? () => context.go(AppRoutes.journal)
-                            : null,
-                      ),
-                      const SizedBox(height: 12),
+                      // ── Recent sessions card ─────────────────────────────
+                      if (journalState.isLoading)
+                        const Center(child: CircularProgressIndicator())
+                      else if (sessions.isEmpty)
+                        TulCard(
+                          child: Column(
+                            children: [
+                              Icon(LucideIcons.clipboardList,
+                                  color: palette.text3, size: 32),
+                              const SizedBox(height: 8),
+                              Text(
+                                'home.noSessionsYet'.tr(),
+                                style: TextStyle(
+                                    color: palette.text2, fontSize: 13),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                          onTap: () => context.go(AppRoutes.journal),
+                        )
+                      else
+                        TulCard(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      'home.recentSessions'.tr(),
+                                      style: TulTextStyles.cardHeader(
+                                          color: palette.text),
+                                    ),
+                                  ),
+                                  if (sessions.length > 3)
+                                    TulGhostButton(
+                                      label: 'home.viewAll'.tr(),
+                                      onPressed: () =>
+                                          context.go(AppRoutes.journal),
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              ...sessions.take(3).map((s) {
+                                final dateStr = DateFormat(
+                                  'MM/dd (E)',
+                                  context.locale.languageCode,
+                                ).format(s.date);
+                                final sub = s.patternName.isNotEmpty
+                                    ? '${s.patternName} · ${s.durationMinutes}${'journal.min'.tr()}'
+                                    : '$dateStr · ${s.durationMinutes}${'journal.min'.tr()}';
+                                final scorePct = s.score * 20;
+                                return ListRow(
+                                  icon: _typeIcon(s.type),
+                                  iconColor: _typeListColor(s.type),
+                                  title: s.type.i18nKey.tr(),
+                                  sub: sub,
+                                  trailing: Text(
+                                    '$scorePct',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      color: _typeAccent(s.type, palette),
+                                    ),
+                                  ),
+                                  onTap: () => context.go(AppRoutes.journal),
+                                );
+                              }),
+                            ],
+                          ),
+                        ),
                     ],
                   ),
                 ),
-              ),
-            ),
-
-            // ── Recent sessions table ───────────────────────────────
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: journalState.isLoading
-                    ? const Padding(
-                        padding: EdgeInsets.all(32),
-                        child: Center(child: CircularProgressIndicator()),
-                      )
-                    : sessions.isEmpty
-                        ? _EmptySessionsHint(
-                            onTap: () => context.go(AppRoutes.journal),
-                          )
-                        : _SessionTable(sessions: sessions.take(3).toList()),
               ),
             ),
 
@@ -196,6 +210,8 @@ class HomeScreen extends ConsumerWidget {
       ),
     );
   }
+
+  // ── Data helpers ─────────────────────────────────────────────────────────────
 
   int _calcStreak(List<TrainingSession> sessions) {
     if (sessions.isEmpty) return 0;
@@ -223,7 +239,6 @@ class HomeScreen extends ConsumerWidget {
   }
 
   int _beltProgress(List<TrainingSession> sessions, BeltLevel belt) {
-    // Rough heuristic: sessions toward next belt target
     const targets = {
       BeltLevel.white: 10,
       BeltLevel.yellow: 20,
@@ -235,234 +250,8 @@ class HomeScreen extends ConsumerWidget {
     final target = targets[belt] ?? 20;
     return ((sessions.length / target) * 100).clamp(0, 100).round();
   }
-}
 
-// ── Stat strip ────────────────────────────────────────────────────────────────
-
-class _StatStrip extends StatelessWidget {
-  const _StatStrip({
-    required this.streak,
-    required this.beltPct,
-    required this.monthCount,
-  });
-
-  final int streak;
-  final int beltPct;
-  final int monthCount;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        _StatCard(
-          icon: Icons.local_fire_department,
-          iconColor: AppColors.primary,
-          value: '$streak',
-          label: 'journal.streakUnit'.tr(),
-          sublabel: 'journal.streak'.tr(),
-        ),
-        const SizedBox(width: 10),
-        _StatCard(
-          icon: Icons.track_changes_outlined,
-          iconColor: AppColors.secondary,
-          value: '$beltPct%',
-          label: '',
-          sublabel: 'home.statsTitle'.tr(),
-        ),
-        const SizedBox(width: 10),
-        _StatCard(
-          icon: Icons.trending_up_rounded,
-          iconColor: AppColors.accent,
-          value: '$monthCount',
-          label: 'journal.thisMonthUnit'.tr(),
-          sublabel: 'journal.thisMonth'.tr(),
-        ),
-      ],
-    );
-  }
-}
-
-class _StatCard extends StatelessWidget {
-  const _StatCard({
-    required this.icon,
-    required this.iconColor,
-    required this.value,
-    required this.label,
-    required this.sublabel,
-  });
-
-  final IconData icon;
-  final Color iconColor;
-  final String value;
-  final String label;
-  final String sublabel;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(12, 14, 12, 14),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border, width: 1),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: iconColor.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(icon, color: iconColor, size: 18),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              label.isEmpty ? value : '$value $label',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                  ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              sublabel,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: 11,
-                  ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ── Today's Focus card ────────────────────────────────────────────────────────
-
-class _TodaysFocusCard extends StatelessWidget {
-  const _TodaysFocusCard({
-    required this.beltLevel,
-    required this.onStart,
-    required this.onDetails,
-  });
-
-  final BeltLevel beltLevel;
-  final VoidCallback onStart;
-  final VoidCallback onDetails;
-
-  @override
-  Widget build(BuildContext context) {
-    final patternName = _currentPattern(beltLevel);
-    return Container(
-      decoration: BoxDecoration(
-        gradient: AppColors.gradMain,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.3),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(
-                  Icons.bolt_rounded,
-                  color: Colors.white70,
-                  size: 14,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  "Today's Focus",
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.white70,
-                        fontWeight: FontWeight.w600,
-                      ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              patternName,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 20,
-                  ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'home.todayRecommendation'.tr(),
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.white70,
-                  ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: FilledButton(
-                    onPressed: onStart,
-                    style: FilledButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: AppColors.primary,
-                      padding: const EdgeInsets.symmetric(vertical: 13),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      textStyle: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 14,
-                      ),
-                    ),
-                    child: const Text('Start Training'),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: onDetails,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      side: const BorderSide(
-                        color: Colors.white38,
-                        width: 1,
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 13),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      textStyle: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                    ),
-                    child: const Text('View Details'),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  String _currentPattern(BeltLevel belt) => switch (belt) {
+  static String _currentPattern(BeltLevel belt) => switch (belt) {
         BeltLevel.white => 'Chon-Ji Pattern (천지)',
         BeltLevel.yellow => 'Dan-Gun Pattern (단군)',
         BeltLevel.green => 'Do-San Pattern (도산)',
@@ -470,362 +259,185 @@ class _TodaysFocusCard extends StatelessWidget {
         BeltLevel.red => 'Yul-Gok Pattern (율곡)',
         BeltLevel.black => 'Joong-Gun Pattern (중근)',
       };
+
+  static IconData _typeIcon(TrainingType type) => switch (type) {
+        TrainingType.pattern => LucideIcons.target,
+        TrainingType.sparring => LucideIcons.zap,
+        TrainingType.kicks => LucideIcons.flame,
+        TrainingType.punches => LucideIcons.activity,
+        TrainingType.fitness => LucideIcons.trendingUp,
+        TrainingType.other => LucideIcons.circle,
+      };
+
+  static ListRowColor _typeListColor(TrainingType type) => switch (type) {
+        TrainingType.pattern => ListRowColor.primary,
+        TrainingType.sparring => ListRowColor.secondary,
+        TrainingType.kicks => ListRowColor.accent,
+        TrainingType.punches => ListRowColor.primary,
+        TrainingType.fitness => ListRowColor.secondary,
+        TrainingType.other => ListRowColor.accent,
+      };
+
+  static Color _typeAccent(TrainingType type, TulPalette p) => switch (type) {
+        TrainingType.pattern => p.primary,
+        TrainingType.sparring => p.secondary,
+        TrainingType.kicks => p.accent,
+        TrainingType.punches => p.primary,
+        TrainingType.fitness => p.green,
+        TrainingType.other => p.text3,
+      };
 }
 
+// ── Student header ────────────────────────────────────────────────────────────
 
+class _StudentHeader extends StatelessWidget {
+  const _StudentHeader({required this.authState, required this.palette});
 
-class _ActionTile extends StatelessWidget {
-  const _ActionTile({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 18),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border, width: 1),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: color, size: 26),
-            const SizedBox(height: 6),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    fontSize: 13,
-                  ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ── This week grid ────────────────────────────────────────────────────────────
-
-class _ThisWeekGrid extends StatelessWidget {
-  const _ThisWeekGrid({required this.sessions});
-
-  final List<TrainingSession> sessions;
-
-  @override
-  Widget build(BuildContext context) {
-    final now = DateTime.now();
-    // Monday-based week
-    final monday = now.subtract(Duration(days: (now.weekday - 1) % 7));
-    final trainedDays = sessions
-        .where((s) => s.date.isAfter(monday.subtract(const Duration(days: 1))))
-        .map((s) => DateTime(s.date.year, s.date.month, s.date.day))
-        .toSet();
-
-    const labels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'home.thisWeek'.tr(),
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: AppColors.text,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: List.generate(7, (i) {
-              final day = monday.add(Duration(days: i));
-              final dayOnly = DateTime(day.year, day.month, day.day);
-              final trained = trainedDays.contains(dayOnly);
-              final isToday = dayOnly ==
-                  DateTime(now.year, now.month, now.day);
-              return Expanded(
-                child: Column(
-                  children: [
-                    Text(
-                      labels[i],
-                      style: const TextStyle(
-                        fontSize: 10,
-                        color: AppColors.textDisabled,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      width: double.infinity,
-                      height: 32,
-                      margin: const EdgeInsets.symmetric(horizontal: 2),
-                      decoration: BoxDecoration(
-                        gradient: trained ? AppColors.gradMain : null,
-                        color: trained
-                            ? null
-                            : isToday
-                                ? AppColors.primary.withValues(alpha: 0.08)
-                                : AppColors.muted,
-                        borderRadius: BorderRadius.circular(9),
-                        border: isToday && !trained
-                            ? Border.all(
-                                color: AppColors.primary.withValues(alpha: 0.4))
-                            : null,
-                      ),
-                      child: trained
-                          ? const Icon(Icons.check_rounded,
-                              size: 14, color: Colors.white)
-                          : null,
-                    ),
-                  ],
-                ),
-              );
-            }),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ── Section header ────────────────────────────────────────────────────────────
-
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title, this.onViewAll});
-
-  final String title;
-  final VoidCallback? onViewAll;
+  final dynamic authState;
+  final TulPalette palette;
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: Theme.of(context).textTheme.titleMedium),
-        if (onViewAll != null)
-          GestureDetector(
-            onTap: onViewAll,
-            child: Text(
-              'home.viewAll'.tr(),
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      gradient: TulGradients.brand,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(LucideIcons.flame,
+                        size: 14, color: Colors.white),
                   ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'ITF TulMaster',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: palette.text2,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'home.greeting'.tr(namedArgs: {'name': ''}),
+                style: Theme.of(context)
+                    .textTheme
+                    .headlineLarge
+                    ?.copyWith(height: 1.1, color: palette.text),
+              ),
+              GradientText(
+                authState.displayName.isEmpty ? '—' : authState.displayName,
+                gradient: TulGradients.brand,
+                style: Theme.of(context)
+                    .textTheme
+                    .headlineLarge
+                    ?.copyWith(height: 1.1),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 12),
+        Material(
+          color: palette.card,
+          borderRadius: TulRadius.brLg,
+          child: InkWell(
+            onTap: () => context.push(AppRoutes.settings),
+            borderRadius: TulRadius.brLg,
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                borderRadius: TulRadius.brLg,
+                border: Border.all(color: palette.border),
+              ),
+              alignment: Alignment.center,
+              child: Icon(LucideIcons.settings, size: 18, color: palette.text),
             ),
           ),
+        ),
       ],
     );
   }
 }
 
-// ── Empty hint ────────────────────────────────────────────────────────────────
+// ── Week dots ─────────────────────────────────────────────────────────────────
 
-class _EmptySessionsHint extends StatelessWidget {
-  const _EmptySessionsHint({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border, width: 1),
-        ),
-        child: Center(
-          child: Column(
-            children: [
-              Icon(
-                Icons.add_circle_outline_rounded,
-                color: AppColors.textDisabled,
-                size: 32,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'home.noSessionsYet'.tr(),
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ── Session table ─────────────────────────────────────────────────────────────
-
-class _SessionTable extends StatelessWidget {
-  const _SessionTable({required this.sessions});
+class _WeekDots extends StatelessWidget {
+  const _WeekDots({required this.sessions});
 
   final List<TrainingSession> sessions;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border, width: 1),
-      ),
-      child: Column(
-        children: [
-          for (int i = 0; i < sessions.length; i++) ...[
-            _SessionRow(session: sessions[i]),
-            if (i < sessions.length - 1)
-              Divider(
-                height: 1,
-                thickness: 1,
-                color: AppColors.border,
-                indent: 16,
-                endIndent: 16,
-              ),
-          ],
-        ],
-      ),
-    );
-  }
-}
+    final palette = context.tul;
+    final now = DateTime.now();
+    final monday = now.subtract(Duration(days: (now.weekday - 1) % 7));
+    final trainedDays = sessions
+        .where((s) =>
+            s.date.isAfter(monday.subtract(const Duration(days: 1))))
+        .map((s) => DateTime(s.date.year, s.date.month, s.date.day))
+        .toSet();
 
-class _SessionRow extends StatelessWidget {
-  const _SessionRow({required this.session});
+    const labels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
-  final TrainingSession session;
+    return Row(
+      children: List.generate(7, (i) {
+        final day = monday.add(Duration(days: i));
+        final dayOnly = DateTime(day.year, day.month, day.day);
+        final trained = trainedDays.contains(dayOnly);
+        final isToday = dayOnly == DateTime(now.year, now.month, now.day);
 
-  static IconData _typeIcon(TrainingType type) => switch (type) {
-        TrainingType.pattern => Icons.auto_awesome_motion,
-        TrainingType.sparring => Icons.sports_martial_arts,
-        TrainingType.kicks => Icons.directions_run,
-        TrainingType.punches => Icons.sports_kabaddi,
-        TrainingType.fitness => Icons.fitness_center,
-        TrainingType.other => Icons.sports,
-      };
-
-  static Color _typeColor(TrainingType type) => switch (type) {
-        TrainingType.pattern => AppColors.primary,
-        TrainingType.sparring => AppColors.secondary,
-        TrainingType.kicks => AppColors.accent,
-        TrainingType.punches => AppColors.warning,
-        TrainingType.fitness => AppColors.success,
-        TrainingType.other => AppColors.textSecondary,
-      };
-
-  @override
-  Widget build(BuildContext context) {
-    final color = _typeColor(session.type);
-    final scorePct = (session.score * 20).clamp(0, 100);
-    final dateStr =
-        DateFormat('MM/dd (E)', context.locale.languageCode).format(session.date);
-    final subtitle = session.patternName.isNotEmpty
-        ? '${session.patternName} · ${session.durationMinutes}${'journal.min'.tr()}'
-        : '$dateStr · ${session.durationMinutes}${'journal.min'.tr()}';
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
-        children: [
-          // Icon chip
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(_typeIcon(session.type), color: color, size: 18),
-          ),
-          const SizedBox(width: 12),
-          // Title + subtitle + progress bar
-          Expanded(
+        return Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(left: i == 0 ? 0 : 3, right: i == 6 ? 0 : 3),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        session.type.i18nKey.tr(),
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.text,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      dateStr,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        color: AppColors.textDisabled,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 2),
                 Text(
-                  subtitle,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: AppColors.textSecondary,
-                  ),
-                  overflow: TextOverflow.ellipsis,
+                  labels[i],
+                  style: TulTextStyles.tiny(color: palette.text3),
                 ),
-                const SizedBox(height: 8),
-                // Progress bar
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: scorePct / 100,
-                    minHeight: 5,
-                    backgroundColor: color.withValues(alpha: 0.12),
-                    valueColor: AlwaysStoppedAnimation<Color>(color),
+                const SizedBox(height: 6),
+                AspectRatio(
+                  aspectRatio: 1,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    decoration: BoxDecoration(
+                      gradient: trained ? TulGradients.brand : null,
+                      color: trained
+                          ? null
+                          : isToday
+                              ? palette.primary.withValues(alpha: 0.08)
+                              : palette.text.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(10),
+                      border: isToday && !trained
+                          ? Border.all(
+                              color: palette.primary.withValues(alpha: 0.4))
+                          : null,
+                    ),
+                    alignment: Alignment.center,
+                    child: trained
+                        ? const Icon(LucideIcons.check,
+                            size: 12, color: Colors.white)
+                        : null,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 12),
-          // Score number
-          Text(
-            '$scorePct',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              color: color,
-            ),
-          ),
-        ],
-      ),
+        );
+      }),
     );
   }
 }
@@ -1031,6 +643,50 @@ class _InstructorHome extends ConsumerWidget {
                   ),
                 ],
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ActionTile extends StatelessWidget {
+  const _ActionTile({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 18),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.border, width: 1),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 26),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    fontSize: 13,
+                  ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
